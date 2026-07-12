@@ -53,7 +53,7 @@ export function HeroSection() {
             Built for Robinhood Chain as a scalable Web3 application layer, not a static NFT page.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <LinkButton href="#waitlist" size="lg">
+            <LinkButton href="/waitlist" size="lg">
               Join Waitlist
             </LinkButton>
             <LinkButton href="#features" size="lg" variant="secondary">

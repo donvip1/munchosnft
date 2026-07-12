@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowDownToLine } from "lucide-react";
 
 import { LinkButton } from "@/components/ui/Button";
@@ -12,7 +13,7 @@ export function SiteHeader() {
         className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8"
         aria-label="Main navigation"
       >
-        <a className="flex items-center gap-3" href="#top" aria-label="Munchos NFT home">
+        <Link className="flex items-center gap-3" href="/" aria-label="Munchos NFT home">
           <span className="relative flex h-10 w-10 overflow-hidden rounded-2xl border border-lemon/35 bg-black/40 shadow-lemon">
             <Image
               src="/images/munchosnft.png"
@@ -26,14 +27,14 @@ export function SiteHeader() {
           <span className="hidden font-pixel text-sm uppercase text-white sm:block">
             {siteConfig.name}
           </span>
-        </a>
+        </Link>
 
         <div className="hidden items-center gap-3 md:flex">
           <StatusPill tone="green">Robinhood Chain Native</StatusPill>
           <StatusPill tone="purple">V1 Waitlist</StatusPill>
         </div>
 
-        <LinkButton href="#waitlist" size="sm">
+        <LinkButton href="/waitlist" size="sm">
           <ArrowDownToLine aria-hidden="true" size={15} />
           Join
         </LinkButton>

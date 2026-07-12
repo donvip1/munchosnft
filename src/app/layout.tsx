@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 
 import "@/app/globals.css";
 
-import { SiteHeader } from "@/components/layout/SiteHeader";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
@@ -62,10 +61,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
-      <body>
-        <SiteHeader />
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

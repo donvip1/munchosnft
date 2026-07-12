@@ -4,6 +4,8 @@ import type { VerifyTasksResponse, XTaskStatusMap } from "@/types/task-verificat
 
 const X_API_BASE_URL = "https://api.x.com/2";
 const DEFAULT_MAX_PAGES = 8;
+const DEFAULT_CACHE_TTL_MS = 60_000;
+const PROJECT_USER_CACHE_KEY = "__project_user__";
 
 type XUser = {
   id: string;
@@ -32,10 +34,49 @@ type XPagedResponse<T> = {
 };
 
 class XApiError extends Error {
-  constructor(message: string) {
+  status?: number;
+
+  constructor(message: string, status?: number) {
     super(message);
     this.name = "XApiError";
+    this.status = status;
   }
+}
+
+type CacheEntry<T> = {
+  value: T;
+  expiresAt: number;
+};
+
+const verificationCache = new Map<string, CacheEntry<VerifyTasksResponse>>();
+const userIdCache = new Map<string, CacheEntry<string>>();
+
+function getCacheTtlMs() {
+  const configuredSeconds = Number(process.env.X_VERIFICATION_CACHE_TTL_SECONDS ?? 60);
+  const seconds = Number.isFinite(configuredSeconds) && configuredSeconds > 0 ? configuredSeconds : 60;
+  return seconds * 1000;
+}
+
+function readCache<T>(cache: Map<string, CacheEntry<T>>, key: string) {
+  const entry = cache.get(key);
+
+  if (!entry) {
+    return null;
+  }
+
+  if (entry.expiresAt <= Date.now()) {
+    cache.delete(key);
+    return null;
+  }
+
+  return entry.value;
+}
+
+function writeCache<T>(cache: Map<string, CacheEntry<T>>, key: string, value: T, ttlMs = DEFAULT_CACHE_TTL_MS) {
+  cache.set(key, {
+    value,
+    expiresAt: Date.now() + ttlMs
+  });
 }
 
 function getBearerToken() {
@@ -64,12 +105,22 @@ async function xFetch<T>(path: string, bearerToken: string): Promise<T> {
   try {
     payload = JSON.parse(text) as T & { title?: string; detail?: string };
   } catch {
-    throw new XApiError("X returned an unexpected response.");
+    throw new XApiError("X returned an unexpected response.", response.status);
   }
 
   if (!response.ok) {
+    const message = payload.detail || payload.title || "X verification request failed.";
+
+    if (response.status === 429 || /credit|quota|rate limit/i.test(message)) {
+      throw new XApiError(
+        "X API credits are depleted or rate-limited. Verification is temporarily unavailable until your X API quota resets or your plan is upgraded.",
+        response.status
+      );
+    }
+
     throw new XApiError(
-      payload.detail || payload.title || "X verification request failed."
+      message,
+      response.status
     );
   }
 
@@ -77,6 +128,15 @@ async function xFetch<T>(path: string, bearerToken: string): Promise<T> {
 }
 
 async function getUserByUsername(username: string, bearerToken: string) {
+  const cachedUserId = readCache(userIdCache, username);
+
+  if (cachedUserId) {
+    return {
+      id: cachedUserId,
+      username
+    };
+  }
+
   const response = await xFetch<XSingleUserResponse>(
     `/users/by/username/${encodeURIComponent(username)}`,
     bearerToken
@@ -85,6 +145,8 @@ async function getUserByUsername(username: string, bearerToken: string) {
   if (!response.data?.id) {
     throw new XApiError(`X user @${username} was not found.`);
   }
+
+  writeCache(userIdCache, username, response.data.id, getCacheTtlMs());
 
   return response.data;
 }
@@ -96,7 +158,15 @@ async function getProjectUserId(bearerToken: string) {
     return configuredUserId;
   }
 
+  const cachedProjectUserId = readCache(userIdCache, PROJECT_USER_CACHE_KEY);
+
+  if (cachedProjectUserId) {
+    return cachedProjectUserId;
+  }
+
   const projectUser = await getUserByUsername(siteConfig.handle, bearerToken);
+  writeCache(userIdCache, PROJECT_USER_CACHE_KEY, projectUser.id, getCacheTtlMs());
+
   return projectUser.id;
 }
 
@@ -162,6 +232,7 @@ export async function verifyXTasks(xUsername: string): Promise<VerifyTasksRespon
   const bearerToken = getBearerToken();
   const username = normalizeXUsername(xUsername);
   const tweetId = getVerificationPostId();
+  const cacheKey = `${username}:${tweetId}`;
 
   if (!username) {
     return {
@@ -184,6 +255,12 @@ export async function verifyXTasks(xUsername: string): Promise<VerifyTasksRespon
         repost: false
       }
     };
+  }
+
+  const cachedResponse = readCache(verificationCache, cacheKey);
+
+  if (cachedResponse) {
+    return cachedResponse;
   }
 
   try {
@@ -217,13 +294,17 @@ export async function verifyXTasks(xUsername: string): Promise<VerifyTasksRespon
     };
     const complete = Object.values(tasks).every(Boolean);
 
-    return {
+    const result: VerifyTasksResponse = {
       ok: complete,
       message: complete
         ? "X tasks verified."
         : "Some X tasks were not found yet. Complete the missing tasks, then verify again.",
       tasks
     };
+
+    writeCache(verificationCache, cacheKey, result, getCacheTtlMs());
+
+    return result;
   } catch (error) {
     return {
       ok: false,

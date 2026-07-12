@@ -28,6 +28,7 @@ X_API_BEARER_TOKEN=YOUR_X_API_BEARER_TOKEN
 X_PROJECT_USER_ID=
 X_PINNED_POST_ID=2076332062122955242
 X_VERIFICATION_MAX_PAGES=8
+X_VERIFICATION_CACHE_TTL_SECONDS=60
 ```
 
 If `GOOGLE_APPS_SCRIPT_URL` is not present in development, the API returns a demo success response so the UI can be tested. Production requires the Apps Script URL.
@@ -44,7 +45,7 @@ The waitlist uses server-side X API checks before allowing users to submit. The 
 - Liked the pinned post
 - Reposted the pinned post
 
-Add `X_API_BEARER_TOKEN` in Vercel as a secret server-side environment variable. `X_PROJECT_USER_ID` is optional; when omitted, the app looks up `@munchonft` by username. `X_PINNED_POST_ID` defaults to `2076332062122955242`. `X_VERIFICATION_MAX_PAGES` controls how many X API pages the verifier scans before returning a missing task.
+Add `X_API_BEARER_TOKEN` in Vercel as a secret server-side environment variable. Add `X_PROJECT_USER_ID` when possible to avoid spending an extra X API read on every verification. `X_PINNED_POST_ID` defaults to `2076332062122955242`. `X_VERIFICATION_MAX_PAGES` controls how many X API pages the verifier scans before returning a missing task. `X_VERIFICATION_CACHE_TTL_SECONDS` reduces repeated verification reads for the same username on warm server instances.
 
 ## Google Sheets Backend
 

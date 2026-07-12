@@ -1,0 +1,109 @@
+export const siteConfig = {
+  name: "Munchos NFT",
+  handle: "munchosnft",
+  xUrl: "https://x.com/munchosnft",
+  pinnedPostUrl: process.env.NEXT_PUBLIC_PINNED_X_POST_URL ?? "",
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://munchosnft.vercel.app",
+  chain: "Robinhood Chain",
+  supportEmail: "community@munchosnft.xyz"
+} as const;
+
+export const waitlistTasks = [
+  "Follow @munchosnft on X",
+  "Like the pinned post",
+  "Repost the pinned post",
+  "Join the waitlist"
+] as const;
+
+export const futureFeatures = [
+  {
+    title: "NFT Mint",
+    description: "Genesis access, allowlist minting, and chain-native mint sessions.",
+    icon: "Sparkles"
+  },
+  {
+    title: "NFT Fusion",
+    description: "Fuse assets, lock or burn originals, and mint upgraded Munchos.",
+    icon: "RefreshCw"
+  },
+  {
+    title: "NFT Evolution",
+    description: "Trait upgrades and rarity progression powered by smart contracts.",
+    icon: "Dna"
+  },
+  {
+    title: "Marketplace",
+    description: "Collection discovery and trading designed for Robinhood Chain NFTs.",
+    icon: "Store"
+  },
+  {
+    title: "Rewards",
+    description: "Community quests, referral incentives, and loyalty mechanics.",
+    icon: "Trophy"
+  },
+  {
+    title: "Staking",
+    description: "Stake future assets for ecosystem rewards and status tiers.",
+    icon: "Gem"
+  },
+  {
+    title: "Leaderboard",
+    description: "Rank collectors, referrers, fusion activity, and event performance.",
+    icon: "BarChart3"
+  },
+  {
+    title: "Wallet Dashboard",
+    description: "Portfolio, owned NFTs, activity, rewards, and chain status in one view.",
+    icon: "Wallet"
+  },
+  {
+    title: "User Profile",
+    description: "Collector identity, badges, referral history, and on-chain progress.",
+    icon: "UserRound"
+  },
+  {
+    title: "Collections",
+    description: "Explore Munchos sets, traits, rarity classes, and evolution branches.",
+    icon: "PanelsTopLeft"
+  },
+  {
+    title: "Achievements",
+    description: "Quest badges and future gameplay milestones for the community.",
+    icon: "Medal"
+  }
+] as const;
+
+export const roadmap = [
+  {
+    phase: "Phase 1",
+    title: "Community Launch",
+    items: [
+      "Branding",
+      "UI/UX",
+      "Waitlist",
+      "Google Sheets Backend",
+      "Referral System",
+      "Deployment"
+    ]
+  },
+  {
+    phase: "Phase 2",
+    title: "Chain Access",
+    items: ["Wallet Connect", "Robinhood Chain Integration", "NFT Collection Preview"]
+  },
+  {
+    phase: "Phase 3",
+    title: "Mint Layer",
+    items: ["NFT Mint", "Smart Contracts", "Metadata", "OpenSea Integration"]
+  },
+  {
+    phase: "Phase 4",
+    title: "Evolution Engine",
+    items: ["NFT Fusion", "Evolution Engine", "Trait Upgrades"]
+  },
+  {
+    phase: "Phase 5",
+    title: "Ecosystem",
+    items: ["Marketplace", "Rewards", "Staking", "Leaderboards", "User Profiles"]
+  }
+] as const;

@@ -1,0 +1,15 @@
+.next
+node_modules
+out
+dist
+.vercel
+.DS_Store
+.env
+.env*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tsbuildinfo
+/munchosnft.png
+/munchos1.png

@@ -1,0 +1,61 @@
+import { buildReferralLink, generateReferralCode } from "@/lib/referral";
+import type { WaitlistPayload, WaitlistResponse } from "@/types/waitlist";
+
+type AppsScriptResponse = {
+  ok?: boolean;
+  status?: "registered" | "duplicate";
+  message?: string;
+  referralCode?: string;
+  referralLink?: string;
+  referralCount?: number;
+  waitlistPosition?: number | null;
+  rewardTier?: string | null;
+};
+
+export async function submitWaitlist(payload: WaitlistPayload): Promise<WaitlistResponse> {
+  const response = await fetch("/api/waitlist", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return (await response.json()) as WaitlistResponse;
+}
+
+export async function postToGoogleAppsScript(
+  endpoint: string,
+  payload: WaitlistPayload
+): Promise<WaitlistResponse> {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store"
+  });
+
+  const data = (await response.json()) as AppsScriptResponse;
+
+  if (!response.ok || !data.ok) {
+    return {
+      ok: false,
+      message: data.message ?? "Unable to complete waitlist registration."
+    };
+  }
+
+  const referralCode = data.referralCode ?? generateReferralCode(payload.walletAddress);
+
+  return {
+    ok: true,
+    status: data.status ?? "registered",
+    message: data.message ?? "You are on the Munchos NFT waitlist.",
+    referralCode,
+    referralLink: data.referralLink ?? buildReferralLink(referralCode),
+    referralCount: data.referralCount ?? 0,
+    waitlistPosition: data.waitlistPosition ?? null,
+    rewardTier: data.rewardTier ?? null
+  };
+}

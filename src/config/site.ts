@@ -1,15 +1,17 @@
 export const siteConfig = {
   name: "Munchos NFT",
-  handle: "munchosnft",
-  xUrl: "https://x.com/munchosnft",
-  pinnedPostUrl: process.env.NEXT_PUBLIC_PINNED_X_POST_URL ?? "",
+  handle: "munchonft",
+  xUrl: "https://x.com/munchonft",
+  pinnedPostUrl:
+    process.env.NEXT_PUBLIC_PINNED_X_POST_URL ??
+    "https://x.com/i/status/2076332062122955242",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://munchosnft.vercel.app",
   chain: "Robinhood Chain",
   supportEmail: "community@munchosnft.xyz"
 } as const;
 
 export const waitlistTasks = [
-  "Follow @munchosnft on X",
+  `Follow @${siteConfig.handle} on X`,
   "Like the pinned post",
   "Repost the pinned post",
   "Join the waitlist"

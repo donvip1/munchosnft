@@ -149,7 +149,7 @@ export function WaitlistCard() {
               value={form.xUsername}
               error={fieldErrors?.xUsername}
               onChange={(value) => updateField("xUsername", value)}
-              placeholder="@munchosnft"
+              placeholder="@munchonft"
               icon={<Twitter aria-hidden="true" size={17} />}
             />
 

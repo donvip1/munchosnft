@@ -35,8 +35,10 @@ export async function POST(request: Request) {
   }
 
   const endpoint = process.env.GOOGLE_APPS_SCRIPT_URL;
+  const hasConfiguredEndpoint =
+    Boolean(endpoint) && !endpoint?.includes("YOUR_DEPLOYMENT_ID");
 
-  if (!endpoint && process.env.NODE_ENV === "production") {
+  if (!hasConfiguredEndpoint && process.env.NODE_ENV === "production") {
     return NextResponse.json<WaitlistResponse>(
       {
         ok: false,
@@ -46,7 +48,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!endpoint) {
+  if (!hasConfiguredEndpoint) {
     const referralCode = generateReferralCode(sanitized.walletAddress);
 
     return NextResponse.json<WaitlistResponse>({
@@ -61,6 +63,6 @@ export async function POST(request: Request) {
     });
   }
 
-  const response = await postToGoogleAppsScript(endpoint, sanitized);
+  const response = await postToGoogleAppsScript(endpoint as string, sanitized);
   return NextResponse.json<WaitlistResponse>(response, { status: response.ok ? 200 : 400 });
 }

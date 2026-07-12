@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   keywords: [
     "Munchos NFT",
     "munchosnft",
+    "munchonft",
     "Robinhood Chain",
     "NFT waitlist",
     "NFT fusion",
@@ -43,7 +44,7 @@ export const metadata: Metadata = {
     title: "Munchos NFT",
     description: "The Future of NFT Evolution Starts Here.",
     images: ["/images/munchosnft.png"],
-    creator: "@munchosnft"
+    creator: "@munchonft"
   },
   icons: {
     icon: "/images/munchosnft.png",

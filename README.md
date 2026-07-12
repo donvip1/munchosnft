@@ -23,12 +23,14 @@ Create `.env.local` from `.env.example`:
 ```bash
 GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
 NEXT_PUBLIC_SITE_URL=https://munchosnft.vercel.app
-NEXT_PUBLIC_PINNED_X_POST_URL=https://x.com/munchosnft/status/YOUR_PINNED_POST_ID
+NEXT_PUBLIC_PINNED_X_POST_URL=https://x.com/i/status/2076332062122955242
 ```
 
 If `GOOGLE_APPS_SCRIPT_URL` is not present in development, the API returns a demo success response so the UI can be tested. Production requires the Apps Script URL.
 
 For Vercel, set `NEXT_PUBLIC_SITE_URL` to the generated Vercel domain first. When `munchosnft.xyz` is connected later, update the same environment variable to `https://munchosnft.xyz` and redeploy.
+
+The project X account is `@munchonft`. The default pinned post embed points to `https://x.com/i/status/2076332062122955242`.
 
 ## Google Sheets Backend
 
@@ -41,6 +43,19 @@ For Vercel, set `NEXT_PUBLIC_SITE_URL` to the generated Vercel domain first. Whe
 7. Optional: add a Script Property named `SITE_URL` with the active Vercel URL. Change it to `https://munchosnft.xyz` after the custom domain is live.
 
 The backend stores timestamp, full name, email, X username, EVM wallet address, referral code, referrer, referral count, task completion, and submission status. It prevents duplicates by wallet address, email, and X username.
+
+## Vercel Deployment
+
+1. Import `https://github.com/donvip1/munchosnft` into Vercel.
+2. Keep the framework preset as Next.js.
+3. Add the environment variables from `.env.example`.
+4. Deploy from the `main` branch.
+5. Copy the generated Vercel URL.
+6. Update `NEXT_PUBLIC_SITE_URL` in Vercel to that generated URL.
+7. Update the Google Apps Script `SITE_URL` script property to the same Vercel URL.
+8. Redeploy after any environment variable change.
+
+When the custom domain is ready, connect `munchosnft.xyz` in Vercel, update `NEXT_PUBLIC_SITE_URL` to `https://munchosnft.xyz`, update the Apps Script `SITE_URL` property to the same value, and redeploy.
 
 ## Architecture
 

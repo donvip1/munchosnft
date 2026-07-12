@@ -28,16 +28,36 @@ export async function postToGoogleAppsScript(
   endpoint: string,
   payload: WaitlistPayload
 ): Promise<WaitlistResponse> {
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8"
-    },
-    body: JSON.stringify(payload),
-    cache: "no-store"
-  });
+  let response: Response;
 
-  const data = (await response.json()) as AppsScriptResponse;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload),
+      cache: "no-store"
+    });
+  } catch {
+    return {
+      ok: false,
+      message: "Waitlist backend is unreachable. Check the Google Apps Script deployment URL."
+    };
+  }
+
+  const text = await response.text();
+  let data: AppsScriptResponse;
+
+  try {
+    data = JSON.parse(text) as AppsScriptResponse;
+  } catch {
+    return {
+      ok: false,
+      message:
+        "Waitlist backend returned an unexpected response. Confirm the Google Apps Script web app is deployed with public access."
+    };
+  }
 
   if (!response.ok || !data.ok) {
     return {

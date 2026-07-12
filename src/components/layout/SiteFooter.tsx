@@ -1,4 +1,4 @@
-import { Github, Twitter } from "lucide-react";
+import { Twitter } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
 
@@ -21,15 +21,6 @@ export function SiteFooter() {
             aria-label="Munchos NFT on X"
           >
             <Twitter aria-hidden="true" size={18} />
-          </a>
-          <a
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-white/70 transition hover:border-violet/50 hover:text-violet-soft"
-            href="https://github.com/"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="GitHub"
-          >
-            <Github aria-hidden="true" size={18} />
           </a>
         </div>
       </div>

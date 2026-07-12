@@ -96,35 +96,18 @@ export const futureFeatures = [
 
 export const roadmap = [
   {
-    phase: "Phase 1",
-    title: "Community Launch",
-    items: [
-      "Branding",
-      "UI/UX",
-      "Waitlist",
-      "Google Sheets Backend",
-      "Referral System",
-      "Deployment"
-    ]
+    title: "Community Launch"
   },
   {
-    phase: "Phase 2",
-    title: "Chain Access",
-    items: ["Wallet Connect", "Robinhood Chain Integration", "NFT Collection Preview"]
+    title: "Chain Access"
   },
   {
-    phase: "Phase 3",
-    title: "Mint Layer",
-    items: ["NFT Mint", "Smart Contracts", "Metadata", "OpenSea Integration"]
+    title: "Mint Layer"
   },
   {
-    phase: "Phase 4",
-    title: "Evolution Engine",
-    items: ["NFT Fusion", "Evolution Engine", "Trait Upgrades"]
+    title: "Evolution Engine"
   },
   {
-    phase: "Phase 5",
-    title: "Ecosystem",
-    items: ["Marketplace", "Rewards", "Staking", "Leaderboards", "User Profiles"]
+    title: "Ecosystem"
   }
 ] as const;

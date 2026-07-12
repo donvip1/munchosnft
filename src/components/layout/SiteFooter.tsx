@@ -8,9 +8,6 @@ export function SiteFooter() {
       <div className="mx-auto flex max-w-7xl flex-col gap-6 text-sm text-white/56 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="font-pixel text-base text-white">{siteConfig.name}</p>
-          <p className="mt-2 max-w-xl">
-            A mobile-first Web3 community application built for the Robinhood Chain ecosystem.
-          </p>
         </div>
         <div className="flex items-center gap-3">
           <a

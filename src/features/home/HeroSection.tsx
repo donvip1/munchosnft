@@ -27,17 +27,16 @@ export function HeroSection() {
         </div>
 
         <motion.div
-          className="relative mx-auto h-56 w-56 overflow-hidden rounded-[36px] border border-lemon/35 bg-black/30 shadow-lemon sm:h-72 sm:w-72"
+          className="relative mx-auto w-full max-w-[300px] sm:max-w-[390px]"
           animate={{ y: [0, -12, 0] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         >
-          <div className="absolute inset-0 bg-lemon/10" />
           <Image
             src="/images/munchosnft.png"
-            alt="Munchos NFT mascot heads"
+            alt="Munchos NFT"
             width={680}
             height={454}
-            className="h-full w-full scale-[1.8] object-cover object-top drop-shadow-[0_0_28px_rgba(200,255,0,0.52)]"
+            className="h-auto w-full drop-shadow-[0_0_28px_rgba(200,255,0,0.52)]"
             priority
           />
         </motion.div>

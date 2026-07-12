@@ -24,6 +24,10 @@ Create `.env.local` from `.env.example`:
 GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
 NEXT_PUBLIC_SITE_URL=https://munchosnft.vercel.app
 NEXT_PUBLIC_PINNED_X_POST_URL=https://x.com/i/status/2076332062122955242
+X_API_BEARER_TOKEN=YOUR_X_API_BEARER_TOKEN
+X_PROJECT_USER_ID=
+X_PINNED_POST_ID=2076332062122955242
+X_VERIFICATION_MAX_PAGES=8
 ```
 
 If `GOOGLE_APPS_SCRIPT_URL` is not present in development, the API returns a demo success response so the UI can be tested. Production requires the Apps Script URL.
@@ -31,6 +35,16 @@ If `GOOGLE_APPS_SCRIPT_URL` is not present in development, the API returns a dem
 For Vercel, set `NEXT_PUBLIC_SITE_URL` to the generated Vercel domain first. When `munchosnft.xyz` is connected later, update the same environment variable to `https://munchosnft.xyz` and redeploy.
 
 The project X account is `@munchonft`. The default pinned post embed points to `https://x.com/i/status/2076332062122955242`.
+
+## X Task Verification
+
+The waitlist uses server-side X API checks before allowing users to submit. The app verifies:
+
+- Followed `@munchonft`
+- Liked the pinned post
+- Reposted the pinned post
+
+Add `X_API_BEARER_TOKEN` in Vercel as a secret server-side environment variable. `X_PROJECT_USER_ID` is optional; when omitted, the app looks up `@munchonft` by username. `X_PINNED_POST_ID` defaults to `2076332062122955242`. `X_VERIFICATION_MAX_PAGES` controls how many X API pages the verifier scans before returning a missing task.
 
 ## Google Sheets Backend
 

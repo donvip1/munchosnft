@@ -1,4 +1,5 @@
 import { buildReferralLink, generateReferralCode } from "@/lib/referral";
+import type { VerifyTasksPayload, VerifyTasksResponse } from "@/types/task-verification";
 import type { WaitlistPayload, WaitlistResponse } from "@/types/waitlist";
 
 type AppsScriptResponse = {
@@ -22,6 +23,20 @@ export async function submitWaitlist(payload: WaitlistPayload): Promise<Waitlist
   });
 
   return (await response.json()) as WaitlistResponse;
+}
+
+export async function verifyWaitlistTasks(
+  payload: VerifyTasksPayload
+): Promise<VerifyTasksResponse> {
+  const response = await fetch("/api/tasks/verify", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return (await response.json()) as VerifyTasksResponse;
 }
 
 export async function postToGoogleAppsScript(

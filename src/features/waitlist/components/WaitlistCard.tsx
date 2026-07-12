@@ -3,14 +3,15 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, ReactNode, useMemo, useState } from "react";
 import { Check, CheckCircle2, ExternalLink, Loader2, ShieldCheck, Twitter, WalletCards } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { siteConfig, waitlistTaskActions } from "@/config/site";
-import { submitWaitlist } from "@/lib/waitlist-api";
+import { submitWaitlist, verifyWaitlistTasks } from "@/lib/waitlist-api";
+import type { XTaskId } from "@/types/task-verification";
 import type { WaitlistFailure, WaitlistPayload, WaitlistSuccess as WaitlistSuccessType } from "@/types/waitlist";
 
 import { WaitlistSuccess } from "./WaitlistSuccess";
@@ -25,10 +26,7 @@ const initialState: WaitlistPayload = {
   taskCompleted: false
 };
 
-const TASK_CONFIRMATION_DELAY_MS = 6000;
-
-type TaskId = (typeof waitlistTaskActions)[number]["id"];
-type TaskStatus = "idle" | "checking" | "complete";
+type TaskStatus = "idle" | "missing" | "complete";
 
 function createInitialTaskStatus() {
   return waitlistTaskActions.reduce(
@@ -36,17 +34,7 @@ function createInitialTaskStatus() {
       ...status,
       [task.id]: "idle"
     }),
-    {} as Record<TaskId, TaskStatus>
-  );
-}
-
-function createInitialTaskCountdown() {
-  return waitlistTaskActions.reduce(
-    (countdown, task) => ({
-      ...countdown,
-      [task.id]: 0
-    }),
-    {} as Record<TaskId, number>
+    {} as Record<XTaskId, TaskStatus>
   );
 }
 
@@ -54,59 +42,77 @@ export function WaitlistCard() {
   const searchParams = useSearchParams();
   const referredBy = useMemo(() => searchParams.get("ref") ?? "", [searchParams]);
   const [form, setForm] = useState<WaitlistPayload>({ ...initialState, referredBy });
-  const [taskStatus, setTaskStatus] = useState<Record<TaskId, TaskStatus>>(
+  const [taskStatus, setTaskStatus] = useState<Record<XTaskId, TaskStatus>>(
     createInitialTaskStatus
-  );
-  const [taskCountdown, setTaskCountdown] = useState<Record<TaskId, number>>(
-    createInitialTaskCountdown
   );
   const [fieldErrors, setFieldErrors] = useState<WaitlistFailure["fieldErrors"]>({});
   const [statusMessage, setStatusMessage] = useState("");
+  const [verificationMessage, setVerificationMessage] = useState("");
+  const [isVerifyingTasks, setIsVerifyingTasks] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState<WaitlistSuccessType | null>(null);
-  const taskTimers = useRef<number[]>([]);
   const allTasksComplete = waitlistTaskActions.every(
     (task) => taskStatus[task.id] === "complete"
   );
 
-  useEffect(() => {
-    const timers = taskTimers.current;
-
-    return () => {
-      timers.forEach((timer) => window.clearTimeout(timer));
-    };
-  }, []);
-
   function updateField<K extends keyof WaitlistPayload>(field: K, value: WaitlistPayload[K]) {
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
+
+    if (field === "xUsername") {
+      setTaskStatus(createInitialTaskStatus());
+      setVerificationMessage("");
+    }
   }
 
   function handleTaskClick(task: (typeof waitlistTaskActions)[number]) {
-    if (taskStatus[task.id] === "checking") {
-      return;
-    }
-
     window.open(task.url, "_blank", "noopener,noreferrer");
     setStatusMessage("");
     setFieldErrors((current) => ({ ...current, taskCompleted: undefined }));
-    setTaskStatus((current) => ({ ...current, [task.id]: "checking" }));
-    setTaskCountdown((current) => ({ ...current, [task.id]: 6 }));
+  }
 
-    const intervalId = window.setInterval(() => {
-      setTaskCountdown((current) => ({
+  async function handleVerifyTasks() {
+    setStatusMessage("");
+    setVerificationMessage("");
+    setFieldErrors((current) => ({ ...current, taskCompleted: undefined, xUsername: undefined }));
+
+    if (!form.xUsername.trim()) {
+      setFieldErrors((current) => ({
         ...current,
-        [task.id]: Math.max((current[task.id] ?? 1) - 1, 0)
+        xUsername: "Enter your X username before verifying tasks."
       }));
-    }, 1000);
+      setVerificationMessage("Enter your X username, complete the tasks on X, then verify.");
+      return;
+    }
 
-    const timeoutId = window.setTimeout(() => {
-      window.clearInterval(intervalId);
-      setTaskStatus((current) => ({ ...current, [task.id]: "complete" }));
-      setTaskCountdown((current) => ({ ...current, [task.id]: 0 }));
-    }, TASK_CONFIRMATION_DELAY_MS);
+    setIsVerifyingTasks(true);
+    const response = await verifyWaitlistTasks({ xUsername: form.xUsername });
+    setIsVerifyingTasks(false);
 
-    taskTimers.current.push(intervalId, timeoutId);
+    if (response.tasks) {
+      setTaskStatus(
+        waitlistTaskActions.reduce(
+          (status, task) => ({
+            ...status,
+            [task.id]: response.tasks?.[task.id] ? "complete" : "missing"
+          }),
+          {} as Record<XTaskId, TaskStatus>
+        )
+      );
+    }
+
+    if (!response.ok) {
+      setVerificationMessage(response.message);
+      setFieldErrors((current) => ({
+        ...current,
+        ...response.fieldErrors,
+        taskCompleted: "X tasks must be verified before joining the waitlist."
+      }));
+      return;
+    }
+
+    setVerificationMessage(response.message);
+    setFieldErrors((current) => ({ ...current, taskCompleted: undefined }));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -115,9 +121,9 @@ export function WaitlistCard() {
     setFieldErrors({});
 
     if (!allTasksComplete) {
-      setStatusMessage("Complete the required X tasks before joining the waitlist.");
+      setStatusMessage("Verify the required X tasks before joining the waitlist.");
       setFieldErrors({
-        taskCompleted: "Open and confirm every required X task button first."
+        taskCompleted: "Click Verify X Tasks after completing follow, like, and repost."
       });
       return;
     }
@@ -168,7 +174,7 @@ export function WaitlistCard() {
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/62 sm:text-base">
             Join the community layer for a scalable Robinhood Chain-native NFT application built
-            for minting, fusion, evolution, rewards, and marketplace expansion.
+            for NFT fusion, minting, evolution, rewards, and marketplace expansion.
           </p>
         </div>
 
@@ -187,7 +193,6 @@ export function WaitlistCard() {
             <div className="mt-5 space-y-3">
               {waitlistTaskActions.map((task) => {
                 const status = taskStatus[task.id];
-                const isChecking = status === "checking";
                 const isComplete = status === "complete";
 
                 return (
@@ -197,7 +202,6 @@ export function WaitlistCard() {
                         ? "border-lemon/35 bg-lemon/[0.08]"
                         : "border-white/10 bg-black/24 hover:border-lemon/35 hover:bg-white/[0.06]"
                     }`}
-                    disabled={isChecking}
                     key={task.id}
                     type="button"
                     onClick={() => handleTaskClick(task)}
@@ -224,14 +228,39 @@ export function WaitlistCard() {
                     <span className="flex shrink-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 font-pixel text-[11px] uppercase text-white/70">
                       {isComplete
                         ? "Checked"
-                        : isChecking
-                          ? `${taskCountdown[task.id]}s`
+                        : status === "missing"
+                          ? "Missing"
                           : task.actionLabel}
-                      {!isChecking && !isComplete ? <ExternalLink aria-hidden="true" size={14} /> : null}
+                      {!isComplete ? <ExternalLink aria-hidden="true" size={14} /> : null}
                     </span>
                   </button>
                 );
               })}
+
+              <Button
+                className="w-full"
+                disabled={isVerifyingTasks}
+                type="button"
+                variant={allTasksComplete ? "secondary" : "primary"}
+                onClick={handleVerifyTasks}
+              >
+                {isVerifyingTasks ? (
+                  <Loader2 className="animate-spin" aria-hidden="true" size={18} />
+                ) : null}
+                Verify X Tasks
+              </Button>
+
+              {verificationMessage ? (
+                <p
+                  className={`rounded-2xl border p-3 text-xs leading-5 ${
+                    allTasksComplete
+                      ? "border-lemon/30 bg-lemon/[0.07] text-lemon"
+                      : "border-violet/30 bg-violet/10 text-white/70"
+                  }`}
+                >
+                  {verificationMessage}
+                </p>
+              ) : null}
 
               <div
                 className={`rounded-2xl border p-3 ${
@@ -253,7 +282,7 @@ export function WaitlistCard() {
                 </div>
               </div>
 
-              {fieldErrors?.taskCompleted ? (
+              {fieldErrors?.taskCompleted && !verificationMessage ? (
                 <p className="rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-xs leading-5 text-red-200">
                   {fieldErrors.taskCompleted}
                 </p>

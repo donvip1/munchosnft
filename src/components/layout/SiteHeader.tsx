@@ -4,7 +4,6 @@ import { ArrowDownToLine } from "lucide-react";
 
 import { LinkButton } from "@/components/ui/Button";
 import { StatusPill } from "@/components/ui/StatusPill";
-import { siteConfig } from "@/config/site";
 
 export function SiteHeader() {
   return (
@@ -14,18 +13,15 @@ export function SiteHeader() {
         aria-label="Main navigation"
       >
         <Link className="flex items-center gap-3" href="/" aria-label="Munchos NFT home">
-          <span className="relative flex h-10 w-10 overflow-hidden rounded-2xl border border-lemon/35 bg-black/40 shadow-lemon">
+          <span className="relative flex h-12 w-32 items-center justify-center sm:w-40">
             <Image
               src="/images/munchosnft.png"
               alt=""
-              width={80}
-              height={54}
-              className="h-full w-full scale-[2.2] object-cover object-top"
+              width={220}
+              height={147}
+              className="h-full w-full object-contain drop-shadow-[0_0_14px_rgba(200,255,0,0.35)]"
               priority
             />
-          </span>
-          <span className="hidden font-pixel text-sm uppercase text-white sm:block">
-            {siteConfig.name}
           </span>
         </Link>
 

@@ -3,18 +3,17 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, ReactNode, useMemo, useState } from "react";
-import { Check, Loader2, ShieldCheck, Twitter, WalletCards } from "lucide-react";
+import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Check, CheckCircle2, ExternalLink, Loader2, ShieldCheck, Twitter, WalletCards } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusPill } from "@/components/ui/StatusPill";
-import { siteConfig, waitlistTasks } from "@/config/site";
+import { siteConfig, waitlistTaskActions } from "@/config/site";
 import { submitWaitlist } from "@/lib/waitlist-api";
 import type { WaitlistFailure, WaitlistPayload, WaitlistSuccess as WaitlistSuccessType } from "@/types/waitlist";
 
 import { WaitlistSuccess } from "./WaitlistSuccess";
-import { XPostEmbed } from "./XPostEmbed";
 
 const initialState: WaitlistPayload = {
   fullName: "",
@@ -26,27 +25,106 @@ const initialState: WaitlistPayload = {
   taskCompleted: false
 };
 
+const TASK_CONFIRMATION_DELAY_MS = 6000;
+
+type TaskId = (typeof waitlistTaskActions)[number]["id"];
+type TaskStatus = "idle" | "checking" | "complete";
+
+function createInitialTaskStatus() {
+  return waitlistTaskActions.reduce(
+    (status, task) => ({
+      ...status,
+      [task.id]: "idle"
+    }),
+    {} as Record<TaskId, TaskStatus>
+  );
+}
+
+function createInitialTaskCountdown() {
+  return waitlistTaskActions.reduce(
+    (countdown, task) => ({
+      ...countdown,
+      [task.id]: 0
+    }),
+    {} as Record<TaskId, number>
+  );
+}
+
 export function WaitlistCard() {
   const searchParams = useSearchParams();
   const referredBy = useMemo(() => searchParams.get("ref") ?? "", [searchParams]);
   const [form, setForm] = useState<WaitlistPayload>({ ...initialState, referredBy });
+  const [taskStatus, setTaskStatus] = useState<Record<TaskId, TaskStatus>>(
+    createInitialTaskStatus
+  );
+  const [taskCountdown, setTaskCountdown] = useState<Record<TaskId, number>>(
+    createInitialTaskCountdown
+  );
   const [fieldErrors, setFieldErrors] = useState<WaitlistFailure["fieldErrors"]>({});
   const [statusMessage, setStatusMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState<WaitlistSuccessType | null>(null);
+  const taskTimers = useRef<number[]>([]);
+  const allTasksComplete = waitlistTaskActions.every(
+    (task) => taskStatus[task.id] === "complete"
+  );
+
+  useEffect(() => {
+    const timers = taskTimers.current;
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, []);
 
   function updateField<K extends keyof WaitlistPayload>(field: K, value: WaitlistPayload[K]) {
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
   }
 
+  function handleTaskClick(task: (typeof waitlistTaskActions)[number]) {
+    if (taskStatus[task.id] === "checking") {
+      return;
+    }
+
+    window.open(task.url, "_blank", "noopener,noreferrer");
+    setStatusMessage("");
+    setFieldErrors((current) => ({ ...current, taskCompleted: undefined }));
+    setTaskStatus((current) => ({ ...current, [task.id]: "checking" }));
+    setTaskCountdown((current) => ({ ...current, [task.id]: 6 }));
+
+    const intervalId = window.setInterval(() => {
+      setTaskCountdown((current) => ({
+        ...current,
+        [task.id]: Math.max((current[task.id] ?? 1) - 1, 0)
+      }));
+    }, 1000);
+
+    const timeoutId = window.setTimeout(() => {
+      window.clearInterval(intervalId);
+      setTaskStatus((current) => ({ ...current, [task.id]: "complete" }));
+      setTaskCountdown((current) => ({ ...current, [task.id]: 0 }));
+    }, TASK_CONFIRMATION_DELAY_MS);
+
+    taskTimers.current.push(intervalId, timeoutId);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsSubmitting(true);
     setStatusMessage("");
     setFieldErrors({});
 
-    const response = await submitWaitlist({ ...form, referredBy });
+    if (!allTasksComplete) {
+      setStatusMessage("Complete the required X tasks before joining the waitlist.");
+      setFieldErrors({
+        taskCompleted: "Open and confirm every required X task button first."
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const response = await submitWaitlist({ ...form, referredBy, taskCompleted: true });
     setIsSubmitting(false);
 
     if (!response.ok) {
@@ -107,21 +185,79 @@ export function WaitlistCard() {
             </div>
 
             <div className="mt-5 space-y-3">
-              {waitlistTasks.map((task) => (
-                <div
-                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/24 p-3"
-                  key={task}
-                >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-lemon/12 text-lemon">
-                    <Check aria-hidden="true" size={16} />
-                  </span>
-                  <span className="text-sm text-white/72">{task}</span>
-                </div>
-              ))}
-            </div>
+              {waitlistTaskActions.map((task) => {
+                const status = taskStatus[task.id];
+                const isChecking = status === "checking";
+                const isComplete = status === "complete";
 
-            <div className="mt-5">
-              <XPostEmbed />
+                return (
+                  <button
+                    className={`group flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${
+                      isComplete
+                        ? "border-lemon/35 bg-lemon/[0.08]"
+                        : "border-white/10 bg-black/24 hover:border-lemon/35 hover:bg-white/[0.06]"
+                    }`}
+                    disabled={isChecking}
+                    key={task.id}
+                    type="button"
+                    onClick={() => handleTaskClick(task)}
+                  >
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                        isComplete ? "bg-lemon text-black" : "bg-lemon/12 text-lemon"
+                      }`}
+                    >
+                      {isComplete ? (
+                        <CheckCircle2 aria-hidden="true" size={18} />
+                      ) : (
+                        <Check aria-hidden="true" size={17} />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-pixel text-sm uppercase text-white">
+                        {task.title}
+                      </span>
+                      <span className="mt-1 block text-xs leading-5 text-white/50">
+                        {task.description}
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 font-pixel text-[11px] uppercase text-white/70">
+                      {isComplete
+                        ? "Checked"
+                        : isChecking
+                          ? `${taskCountdown[task.id]}s`
+                          : task.actionLabel}
+                      {!isChecking && !isComplete ? <ExternalLink aria-hidden="true" size={14} /> : null}
+                    </span>
+                  </button>
+                );
+              })}
+
+              <div
+                className={`rounded-2xl border p-3 ${
+                  allTasksComplete
+                    ? "border-lemon/30 bg-lemon/[0.07] text-lemon"
+                    : "border-white/10 bg-black/24 text-white/56"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.06]">
+                    <Check aria-hidden="true" size={17} />
+                  </span>
+                  <div>
+                    <p className="font-pixel text-sm uppercase text-white">Join the waitlist</p>
+                    <p className="mt-1 text-xs leading-5 text-white/50">
+                      Submit the form after the X tasks are checked.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {fieldErrors?.taskCompleted ? (
+                <p className="rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-xs leading-5 text-red-200">
+                  {fieldErrors.taskCompleted}
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -178,23 +314,6 @@ export function WaitlistCard() {
               />
             </div>
 
-            <label className="flex cursor-pointer items-start gap-3 rounded-3xl border border-white/10 bg-black/24 p-4">
-              <input
-                className="mt-1 h-4 w-4 rounded border-white/30 bg-transparent accent-lemon"
-                type="checkbox"
-                checked={form.taskCompleted}
-                onChange={(event) => updateField("taskCompleted", event.target.checked)}
-              />
-              <span>
-                <span className="block text-sm text-white">
-                  I have completed all required tasks.
-                </span>
-                {fieldErrors?.taskCompleted ? (
-                  <span className="mt-1 block text-xs text-red-300">{fieldErrors.taskCompleted}</span>
-                ) : null}
-              </span>
-            </label>
-
             {statusMessage ? (
               <p className="rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
                 {statusMessage}
@@ -203,7 +322,7 @@ export function WaitlistCard() {
 
             <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
               {isSubmitting ? <Loader2 className="animate-spin" aria-hidden="true" size={18} /> : null}
-              Join Waitlist
+              {allTasksComplete ? "Join Waitlist" : "Complete Tasks First"}
             </Button>
           </form>
         </div>

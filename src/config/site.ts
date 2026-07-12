@@ -10,11 +10,30 @@ export const siteConfig = {
   supportEmail: "community@munchosnft.xyz"
 } as const;
 
-export const waitlistTasks = [
-  `Follow @${siteConfig.handle} on X`,
-  "Like the pinned post",
-  "Repost the pinned post",
-  "Join the waitlist"
+export const pinnedPostId = "2076332062122955242";
+
+export const waitlistTaskActions = [
+  {
+    id: "follow",
+    title: `Follow @${siteConfig.handle}`,
+    description: "Open the Munchos NFT profile and follow the project account.",
+    actionLabel: "Open Profile",
+    url: siteConfig.xUrl
+  },
+  {
+    id: "like",
+    title: "Like the pinned post",
+    description: "Open the official pinned post and tap like on X.",
+    actionLabel: "Open Post",
+    url: siteConfig.pinnedPostUrl
+  },
+  {
+    id: "repost",
+    title: "Repost the pinned post",
+    description: "Open the repost action for the pinned Munchos NFT post.",
+    actionLabel: "Repost",
+    url: `https://x.com/intent/retweet?tweet_id=${pinnedPostId}`
+  }
 ] as const;
 
 export const futureFeatures = [

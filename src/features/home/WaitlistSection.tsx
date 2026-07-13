@@ -9,7 +9,7 @@ export function WaitlistSection() {
     <section id="waitlist" className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <SectionHeading eyebrow="Version 1" title="Exclusive Waitlist System">
-          The first live module for Munchos NFT captures community demand, task completion, wallet
+          The first live module for Munchos App captures community demand, task completion, wallet
           identity, referrals, and launch momentum.
         </SectionHeading>
 

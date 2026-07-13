@@ -21,11 +21,13 @@ export const waitlistTaskActions = [
     url: siteConfig.xUrl
   },
   {
-    id: "like",
-    title: "Like the pinned post",
-    description: "Open the official pinned post and tap like on X.",
-    actionLabel: "Open Post",
-    url: siteConfig.pinnedPostUrl
+    id: "post",
+    title: "Make a post about Munchos",
+    description: "Create a public X post about Munchos, then paste the post link in the form.",
+    actionLabel: "Create Post",
+    url: `https://x.com/intent/tweet?text=${encodeURIComponent(
+      "Munchos NFT is building a Robinhood Chain-native app for NFT fusion, minting, evolution, rewards, and marketplace expansion."
+    )}`
   },
   {
     id: "repost",
@@ -59,7 +61,7 @@ export const futureFeatures = [
   },
   {
     title: "Rewards",
-    description: "Community quests, referral incentives, and loyalty mechanics.",
+    description: "Community quests, contributor incentives, and loyalty mechanics.",
     icon: "Trophy"
   },
   {
@@ -69,7 +71,7 @@ export const futureFeatures = [
   },
   {
     title: "Leaderboard",
-    description: "Rank collectors, referrers, fusion activity, and event performance.",
+    description: "Rank collectors, contributors, fusion activity, and event performance.",
     icon: "BarChart3"
   },
   {
@@ -79,7 +81,7 @@ export const futureFeatures = [
   },
   {
     title: "User Profile",
-    description: "Collector identity, badges, referral history, and on-chain progress.",
+    description: "Collector identity, badges, community history, and on-chain progress.",
     icon: "UserRound"
   },
   {

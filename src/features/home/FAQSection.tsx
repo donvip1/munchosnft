@@ -2,11 +2,6 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 
 const faqs = [
   {
-    question: "Is Munchos NFT live on-chain today?",
-    answer:
-      "Version 1 is focused on community growth through the exclusive waitlist. Minting, wallet connection, fusion, staking, rewards, and marketplace features are marked Coming Soon."
-  },
-  {
     question: "What makes it Robinhood Chain-native?",
     answer:
       "The product language, roadmap, data model, and future feature surfaces are planned around Robinhood Chain smart contracts, wallet sessions, NFT ownership, fusion state, and reward activity."

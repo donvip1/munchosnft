@@ -3,6 +3,8 @@ import type { WaitlistPayload } from "@/types/waitlist";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const walletPattern = /^0x[a-fA-F0-9]{40}$/;
 const xUsernamePattern = /^@?[A-Za-z0-9_]{1,15}$/;
+const xPostUrlPattern =
+  /^https?:\/\/(www\.)?(x|twitter)\.com\/([A-Za-z0-9_]{1,15}|i)\/status(es)?\/\d+/i;
 
 export function normalizeXUsername(value: string) {
   return value.trim().replace(/^@/, "").toLowerCase();
@@ -27,6 +29,10 @@ export function validateWaitlistPayload(payload: WaitlistPayload) {
     fieldErrors.xUsername = "Enter a valid X username.";
   }
 
+  if (!xPostUrlPattern.test(payload.xPostUrl.trim())) {
+    fieldErrors.xPostUrl = "Enter a valid X post link.";
+  }
+
   if (!walletPattern.test(payload.walletAddress.trim())) {
     fieldErrors.walletAddress = "Enter a valid EVM wallet address.";
   }
@@ -49,6 +55,7 @@ export function sanitizeWaitlistPayload(payload: WaitlistPayload): WaitlistPaylo
     fullName: payload.fullName.trim(),
     email: payload.email.trim().toLowerCase(),
     xUsername: normalizeXUsername(payload.xUsername),
+    xPostUrl: payload.xPostUrl.trim(),
     walletAddress: normalizeWallet(payload.walletAddress),
     referralCode: referralCode || undefined,
     referredBy: referredBy || undefined,

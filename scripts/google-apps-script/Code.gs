@@ -5,6 +5,7 @@ const HEADERS = [
   "Full Name",
   "Email",
   "X Username",
+  "X Post Link",
   "Wallet Address",
   "Referral Code",
   "Referred By",
@@ -33,8 +34,9 @@ function doPost(event) {
     }
 
     const sheet = getWaitlistSheet();
+    const headers = ensureHeaders(sheet);
     const rows = sheet.getDataRange().getValues();
-    const existing = findExisting(rows, payload);
+    const existing = findExisting(rows, headers, payload);
 
     if (existing) {
       return jsonResponse({
@@ -49,32 +51,36 @@ function doPost(event) {
       });
     }
 
-    const referralCode = generateReferralCode(rows);
+    const referralCode = generateReferralCode(rows, headers);
     const referredBy = normalizeReferral(payload.referredBy || payload.referralCode);
     const referralCount = 0;
     const now = new Date();
+    const values = {
+      "Timestamp": now,
+      "Full Name": payload.fullName.trim(),
+      "Email": normalizeEmail(payload.email),
+      "X Username": normalizeXUsername(payload.xUsername),
+      "X Post Link": normalizeUrl(payload.xPostUrl),
+      "Wallet Address": normalizeWallet(payload.walletAddress),
+      "Referral Code": referralCode,
+      "Referred By": referredBy,
+      "Referral Count": referralCount,
+      "Task Completed": Boolean(payload.taskCompleted),
+      "Submission Status": "Registered"
+    };
 
-    sheet.appendRow([
-      now,
-      payload.fullName.trim(),
-      normalizeEmail(payload.email),
-      normalizeXUsername(payload.xUsername),
-      normalizeWallet(payload.walletAddress),
-      referralCode,
-      referredBy,
-      referralCount,
-      Boolean(payload.taskCompleted),
-      "Registered"
-    ]);
+    sheet.appendRow(headers.map(function (header) {
+      return Object.prototype.hasOwnProperty.call(values, header) ? values[header] : "";
+    }));
 
     if (referredBy) {
-      incrementReferralCount(sheet, referredBy);
+      incrementReferralCount(sheet, referredBy, headers);
     }
 
     return jsonResponse({
       ok: true,
       status: "registered",
-      message: "You are on the Munchos NFT waitlist.",
+      message: "Your waitlist registration has been received successfully.",
       referralCode: referralCode,
       referralLink: buildReferralLink(referralCode),
       referralCount: referralCount,
@@ -100,7 +106,13 @@ function parsePayload(event) {
 }
 
 function validatePayload(payload) {
-  if (!payload.fullName || !payload.email || !payload.xUsername || !payload.walletAddress) {
+  if (
+    !payload.fullName ||
+    !payload.email ||
+    !payload.xUsername ||
+    !payload.xPostUrl ||
+    !payload.walletAddress
+  ) {
     return { ok: false, message: "Missing required fields." };
   }
 
@@ -110,6 +122,10 @@ function validatePayload(payload) {
 
   if (!/^0x[a-fA-F0-9]{40}$/.test(String(payload.walletAddress).trim())) {
     return { ok: false, message: "Invalid EVM wallet address." };
+  }
+
+  if (!/^https?:\/\/(www\.)?(x|twitter)\.com\/([A-Za-z0-9_]{1,15}|i)\/status(es)?\/\d+/i.test(String(payload.xPostUrl).trim())) {
+    return { ok: false, message: "Invalid X post link." };
   }
 
   return { ok: true };
@@ -123,32 +139,62 @@ function getWaitlistSheet() {
     sheet = spreadsheet.insertSheet(SHEET_NAME);
   }
 
-  const firstRow = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
-  const hasHeaders = firstRow.join("") !== "";
+  ensureHeaders(sheet);
+  return sheet;
+}
+
+function ensureHeaders(sheet) {
+  const lastColumn = Math.max(sheet.getLastColumn(), 1);
+  const firstRow = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  const hasHeaders = firstRow.some(function (value) {
+    return String(value || "").trim() !== "";
+  });
 
   if (!hasHeaders) {
     sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
     sheet.setFrozenRows(1);
+    return HEADERS.slice();
   }
 
-  return sheet;
+  let headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(function (header) {
+    return String(header || "").trim();
+  });
+
+  HEADERS.forEach(function (header) {
+    if (headers.indexOf(header) === -1) {
+      sheet.getRange(1, sheet.getLastColumn() + 1).setValue(header);
+      headers.push(header);
+    }
+  });
+
+  sheet.setFrozenRows(1);
+  return headers;
 }
 
-function findExisting(rows, payload) {
+function headerIndex(headers, name) {
+  return headers.indexOf(name);
+}
+
+function getCell(row, headers, name) {
+  const index = headerIndex(headers, name);
+  return index === -1 ? "" : row[index];
+}
+
+function findExisting(rows, headers, payload) {
   const email = normalizeEmail(payload.email);
   const username = normalizeXUsername(payload.xUsername);
   const wallet = normalizeWallet(payload.walletAddress);
 
   for (let index = 1; index < rows.length; index += 1) {
     const row = rows[index];
-    const rowEmail = normalizeEmail(row[2]);
-    const rowUsername = normalizeXUsername(row[3]);
-    const rowWallet = normalizeWallet(row[4]);
+    const rowEmail = normalizeEmail(getCell(row, headers, "Email"));
+    const rowUsername = normalizeXUsername(getCell(row, headers, "X Username"));
+    const rowWallet = normalizeWallet(getCell(row, headers, "Wallet Address"));
 
     if (rowEmail === email || rowUsername === username || rowWallet === wallet) {
       return {
-        referralCode: row[5],
-        referralCount: Number(row[7] || 0)
+        referralCode: getCell(row, headers, "Referral Code"),
+        referralCount: Number(getCell(row, headers, "Referral Count") || 0)
       };
     }
   }
@@ -156,14 +202,20 @@ function findExisting(rows, payload) {
   return null;
 }
 
-function incrementReferralCount(sheet, referredBy) {
+function incrementReferralCount(sheet, referredBy, headers) {
   const rows = sheet.getDataRange().getValues();
+  const codeColumnIndex = headerIndex(headers, "Referral Code");
+  const countColumnIndex = headerIndex(headers, "Referral Count");
+
+  if (codeColumnIndex === -1 || countColumnIndex === -1) {
+    return;
+  }
 
   for (let index = 1; index < rows.length; index += 1) {
-    const rowReferralCode = normalizeReferral(rows[index][5]);
+    const rowReferralCode = normalizeReferral(rows[index][codeColumnIndex]);
 
     if (rowReferralCode === referredBy) {
-      const cell = sheet.getRange(index + 1, 8);
+      const cell = sheet.getRange(index + 1, countColumnIndex + 1);
       const nextValue = Number(cell.getValue() || 0) + 1;
       cell.setValue(nextValue);
       return;
@@ -171,10 +223,10 @@ function incrementReferralCount(sheet, referredBy) {
   }
 }
 
-function generateReferralCode(rows) {
+function generateReferralCode(rows, headers) {
   let code = "";
   const existingCodes = rows.slice(1).map(function (row) {
-    return normalizeReferral(row[5]);
+    return normalizeReferral(getCell(row, headers, "Referral Code"));
   });
 
   do {
@@ -209,6 +261,10 @@ function normalizeWallet(value) {
 
 function normalizeReferral(value) {
   return String(value || "").trim().toUpperCase();
+}
+
+function normalizeUrl(value) {
+  return String(value || "").trim();
 }
 
 function buildReferralLink(code) {

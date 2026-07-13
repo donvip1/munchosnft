@@ -30,8 +30,10 @@ export function WaitlistSuccess({ result }: WaitlistSuccessProps) {
           <CheckCircle2 aria-hidden="true" size={24} />
         </div>
         <div>
-          <p className="font-pixel text-2xl text-white">Access Registered</p>
-          <p className="mt-2 text-sm leading-6 text-white/64">{result.message}</p>
+          <p className="font-pixel text-2xl text-white">🎉 Welcome to Munchos NFT!</p>
+          <p className="mt-2 text-sm leading-6 text-white/64">
+            Your waitlist registration has been received successfully.
+          </p>
         </div>
       </div>
 

@@ -1,139 +1,145 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, ExternalLink, Loader2, MessageCircle, ShieldCheck, Twitter, WalletCards } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, ReactNode, useMemo, useState } from "react";
-import { Check, CheckCircle2, ExternalLink, Loader2, ShieldCheck, Twitter, WalletCards } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { siteConfig, waitlistTaskActions } from "@/config/site";
-import { submitWaitlist, verifyWaitlistTasks } from "@/lib/waitlist-api";
-import type { XTaskId } from "@/types/task-verification";
+import { validateWaitlistPayload } from "@/lib/validation";
+import { submitWaitlist } from "@/lib/waitlist-api";
 import type { WaitlistFailure, WaitlistPayload, WaitlistSuccess as WaitlistSuccessType } from "@/types/waitlist";
 
 import { WaitlistSuccess } from "./WaitlistSuccess";
+import { XPostEmbed } from "./XPostEmbed";
 
 const initialState: WaitlistPayload = {
   fullName: "",
   email: "",
   xUsername: "",
+  xPostUrl: "",
   walletAddress: "",
   referralCode: "",
   referredBy: "",
   taskCompleted: false
 };
 
-type TaskStatus = "idle" | "missing" | "complete";
+const firstVerificationMessages = [
+  "Checking community engagement...",
+  "Syncing your submission...",
+  "Reviewing your completed tasks..."
+];
 
-function createInitialTaskStatus() {
-  return waitlistTaskActions.reduce(
-    (status, task) => ({
-      ...status,
-      [task.id]: "idle"
-    }),
-    {} as Record<XTaskId, TaskStatus>
-  );
+const finalVerificationMessages = [
+  "Finalizing your submission...",
+  "Completing registration...",
+  "Securing your waitlist spot..."
+];
+
+type VerificationStage = "idle" | "first-loading" | "modal" | "second-loading";
+
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 export function WaitlistCard() {
   const searchParams = useSearchParams();
   const referredBy = useMemo(() => searchParams.get("ref") ?? "", [searchParams]);
   const [form, setForm] = useState<WaitlistPayload>({ ...initialState, referredBy });
-  const [taskStatus, setTaskStatus] = useState<Record<XTaskId, TaskStatus>>(
-    createInitialTaskStatus
-  );
   const [fieldErrors, setFieldErrors] = useState<WaitlistFailure["fieldErrors"]>({});
   const [statusMessage, setStatusMessage] = useState("");
-  const [verificationMessage, setVerificationMessage] = useState("");
-  const [isVerifyingTasks, setIsVerifyingTasks] = useState(false);
+  const [verificationStage, setVerificationStage] = useState<VerificationStage>("idle");
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState<WaitlistSuccessType | null>(null);
-  const allTasksComplete = waitlistTaskActions.every(
-    (task) => taskStatus[task.id] === "complete"
-  );
+  const isLoading =
+    verificationStage === "first-loading" || verificationStage === "second-loading" || isSubmitting;
 
   function updateField<K extends keyof WaitlistPayload>(field: K, value: WaitlistPayload[K]) {
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
-
-    if (field === "xUsername") {
-      setTaskStatus(createInitialTaskStatus());
-      setVerificationMessage("");
-    }
+    setStatusMessage("");
   }
 
   function handleTaskClick(task: (typeof waitlistTaskActions)[number]) {
     window.open(task.url, "_blank", "noopener,noreferrer");
     setStatusMessage("");
-    setFieldErrors((current) => ({ ...current, taskCompleted: undefined }));
   }
 
-  async function handleVerifyTasks() {
+  function validateForm() {
+    const candidate = {
+      ...form,
+      referredBy,
+      taskCompleted: true
+    };
+    const validation = validateWaitlistPayload(candidate);
+
+    if (!validation.valid) {
+      setFieldErrors(validation.fieldErrors);
+      setStatusMessage("Complete the form and required X task details before continuing.");
+      return false;
+    }
+
+    setFieldErrors({});
     setStatusMessage("");
-    setVerificationMessage("");
-    setFieldErrors((current) => ({ ...current, taskCompleted: undefined, xUsername: undefined }));
+    return true;
+  }
 
-    if (!form.xUsername.trim()) {
-      setFieldErrors((current) => ({
-        ...current,
-        xUsername: "Enter your X username before verifying tasks."
-      }));
-      setVerificationMessage("Enter your X username, complete the tasks on X, then verify.");
-      return;
-    }
+  async function runLoading(messages: string[], duration: number) {
+    setLoadingProgress(0);
+    setLoadingMessage(messages[0]);
 
-    setIsVerifyingTasks(true);
-    const response = await verifyWaitlistTasks({ xUsername: form.xUsername });
-    setIsVerifyingTasks(false);
+    const startedAt = Date.now();
+    let messageIndex = 0;
 
-    if (response.tasks) {
-      setTaskStatus(
-        waitlistTaskActions.reduce(
-          (status, task) => ({
-            ...status,
-            [task.id]: response.tasks?.[task.id] ? "complete" : "missing"
-          }),
-          {} as Record<XTaskId, TaskStatus>
-        )
-      );
-    }
+    const progressTimer = window.setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+      setLoadingProgress(Math.min(Math.round((elapsed / duration) * 100), 96));
+    }, 150);
 
-    if (!response.ok) {
-      setVerificationMessage(response.message);
-      setFieldErrors((current) => ({
-        ...current,
-        ...response.fieldErrors,
-        taskCompleted: "X tasks must be verified before joining the waitlist."
-      }));
-      return;
-    }
+    const messageTimer = window.setInterval(() => {
+      messageIndex = (messageIndex + 1) % messages.length;
+      setLoadingMessage(messages[messageIndex]);
+    }, Math.max(1000, Math.floor(duration / messages.length)));
 
-    setVerificationMessage(response.message);
-    setFieldErrors((current) => ({ ...current, taskCompleted: undefined }));
+    await wait(duration);
+    window.clearInterval(progressTimer);
+    window.clearInterval(messageTimer);
+    setLoadingProgress(100);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatusMessage("");
-    setFieldErrors({});
 
-    if (!allTasksComplete) {
-      setStatusMessage("Verify the required X tasks before joining the waitlist.");
-      setFieldErrors({
-        taskCompleted: "Click Verify X Tasks after completing follow, like, and repost."
-      });
+    if (isLoading) {
       return;
     }
 
+    if (!validateForm()) {
+      return;
+    }
+
+    setVerificationStage("first-loading");
+    await runLoading(firstVerificationMessages, 6500);
+    setVerificationStage("modal");
+  }
+
+  async function handleVerifyAgain() {
+    setVerificationStage("second-loading");
+    setStatusMessage("");
+    await runLoading(finalVerificationMessages, 3500);
     setIsSubmitting(true);
 
     const response = await submitWaitlist({ ...form, referredBy, taskCompleted: true });
     setIsSubmitting(false);
 
     if (!response.ok) {
+      setVerificationStage("idle");
       setStatusMessage(response.message);
       setFieldErrors(response.fieldErrors);
       return;
@@ -178,7 +184,7 @@ export function WaitlistCard() {
           </p>
         </div>
 
-        <div className="grid gap-0 lg:grid-cols-[0.86fr_1.14fr]">
+        <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="border-b border-white/10 p-5 sm:p-6 lg:border-b-0 lg:border-r">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-lemon/30 bg-lemon/10 text-lemon">
@@ -186,107 +192,57 @@ export function WaitlistCard() {
               </div>
               <div>
                 <p className="font-pixel text-sm uppercase text-white">Required Tasks</p>
-                <p className="text-xs text-white/48">Complete before submitting</p>
+                <p className="text-xs text-white/48">Open each task before verifying</p>
               </div>
             </div>
 
             <div className="mt-5 space-y-3">
-              {waitlistTaskActions.map((task) => {
-                const status = taskStatus[task.id];
-                const isComplete = status === "complete";
-
-                return (
-                  <button
-                    className={`group flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${
-                      isComplete
-                        ? "border-lemon/35 bg-lemon/[0.08]"
-                        : "border-white/10 bg-black/24 hover:border-lemon/35 hover:bg-white/[0.06]"
-                    }`}
-                    key={task.id}
-                    type="button"
-                    onClick={() => handleTaskClick(task)}
-                  >
-                    <span
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                        isComplete ? "bg-lemon text-black" : "bg-lemon/12 text-lemon"
-                      }`}
-                    >
-                      {isComplete ? (
-                        <CheckCircle2 aria-hidden="true" size={18} />
-                      ) : (
-                        <Check aria-hidden="true" size={17} />
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-pixel text-sm uppercase text-white">
-                        {task.title}
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-white/50">
-                        {task.description}
-                      </span>
-                    </span>
-                    <span className="flex shrink-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 font-pixel text-[11px] uppercase text-white/70">
-                      {isComplete
-                        ? "Checked"
-                        : status === "missing"
-                          ? "Missing"
-                          : task.actionLabel}
-                      {!isComplete ? <ExternalLink aria-hidden="true" size={14} /> : null}
-                    </span>
-                  </button>
-                );
-              })}
-
-              <Button
-                className="w-full"
-                disabled={isVerifyingTasks}
-                type="button"
-                variant={allTasksComplete ? "secondary" : "primary"}
-                onClick={handleVerifyTasks}
-              >
-                {isVerifyingTasks ? (
-                  <Loader2 className="animate-spin" aria-hidden="true" size={18} />
-                ) : null}
-                Verify X Tasks
-              </Button>
-
-              {verificationMessage ? (
-                <p
-                  className={`rounded-2xl border p-3 text-xs leading-5 ${
-                    allTasksComplete
-                      ? "border-lemon/30 bg-lemon/[0.07] text-lemon"
-                      : "border-violet/30 bg-violet/10 text-white/70"
-                  }`}
+              {waitlistTaskActions.map((task) => (
+                <button
+                  className="group flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black/24 p-3 text-left transition hover:border-lemon/35 hover:bg-white/[0.06]"
+                  key={task.id}
+                  type="button"
+                  onClick={() => handleTaskClick(task)}
                 >
-                  {verificationMessage}
-                </p>
-              ) : null}
-
-              <div
-                className={`rounded-2xl border p-3 ${
-                  allTasksComplete
-                    ? "border-lemon/30 bg-lemon/[0.07] text-lemon"
-                    : "border-white/10 bg-black/24 text-white/56"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.06]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lemon/12 text-lemon">
                     <Check aria-hidden="true" size={17} />
                   </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-pixel text-sm uppercase text-white">
+                      {task.title}
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-white/50">
+                      {task.description}
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 font-pixel text-[11px] uppercase text-white/70">
+                    {task.actionLabel}
+                    <ExternalLink aria-hidden="true" size={14} />
+                  </span>
+                </button>
+              ))}
+
+              <button
+                className="w-full rounded-2xl border border-white/10 bg-black/24 p-3 text-left transition hover:border-lemon/35 hover:bg-white/[0.06]"
+                type="button"
+                onClick={() => window.open(siteConfig.pinnedPostUrl, "_blank", "noopener,noreferrer")}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-lemon">
+                    <MessageCircle aria-hidden="true" size={17} />
+                  </span>
                   <div>
-                    <p className="font-pixel text-sm uppercase text-white">Join the waitlist</p>
+                    <p className="font-pixel text-sm uppercase text-white">
+                      Comment on the pinned post
+                    </p>
                     <p className="mt-1 text-xs leading-5 text-white/50">
-                      Submit the form after the X tasks are checked.
+                      Leave a genuine comment before submitting your waitlist entry.
                     </p>
                   </div>
                 </div>
-              </div>
+              </button>
 
-              {fieldErrors?.taskCompleted && !verificationMessage ? (
-                <p className="rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-xs leading-5 text-red-200">
-                  {fieldErrors.taskCompleted}
-                </p>
-              ) : null}
+              <XPostEmbed />
             </div>
           </div>
 
@@ -298,6 +254,7 @@ export function WaitlistCard() {
                 error={fieldErrors?.fullName}
                 onChange={(value) => updateField("fullName", value)}
                 autoComplete="name"
+                disabled={isLoading}
               />
               <Field
                 label="Email Address"
@@ -306,6 +263,7 @@ export function WaitlistCard() {
                 onChange={(value) => updateField("email", value)}
                 autoComplete="email"
                 type="email"
+                disabled={isLoading}
               />
             </div>
 
@@ -316,6 +274,17 @@ export function WaitlistCard() {
               onChange={(value) => updateField("xUsername", value)}
               placeholder="@munchonft"
               icon={<Twitter aria-hidden="true" size={17} />}
+              disabled={isLoading}
+            />
+
+            <Field
+              label="Munchos Post Link"
+              value={form.xPostUrl}
+              error={fieldErrors?.xPostUrl}
+              onChange={(value) => updateField("xPostUrl", value)}
+              placeholder="https://x.com/username/status/..."
+              icon={<ExternalLink aria-hidden="true" size={17} />}
+              disabled={isLoading}
             />
 
             <Field
@@ -325,6 +294,7 @@ export function WaitlistCard() {
               onChange={(value) => updateField("walletAddress", value)}
               placeholder="0x..."
               icon={<WalletCards aria-hidden="true" size={17} />}
+              disabled={isLoading}
             />
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -333,6 +303,7 @@ export function WaitlistCard() {
                 value={form.referralCode ?? ""}
                 onChange={(value) => updateField("referralCode", value)}
                 placeholder="Optional"
+                disabled={isLoading}
               />
               <Field
                 label="Referred By"
@@ -343,20 +314,96 @@ export function WaitlistCard() {
               />
             </div>
 
+            {isLoading ? (
+              <div className="rounded-3xl border border-lemon/20 bg-lemon/[0.07] p-4">
+                <div className="flex items-center gap-3 text-sm text-lemon">
+                  <Loader2 className="animate-spin" aria-hidden="true" size={18} />
+                  <span>{loadingMessage}</span>
+                </div>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/40">
+                  <div
+                    className="h-full rounded-full bg-lemon transition-all duration-150"
+                    style={{ width: `${loadingProgress}%` }}
+                  />
+                </div>
+              </div>
+            ) : null}
+
             {statusMessage ? (
               <p className="rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
                 {statusMessage}
               </p>
             ) : null}
 
-            <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
-              {isSubmitting ? <Loader2 className="animate-spin" aria-hidden="true" size={18} /> : null}
-              {allTasksComplete ? "Join Waitlist" : "Complete Tasks First"}
+            <Button className="w-full" disabled={isLoading} size="lg" type="submit">
+              {isLoading ? <Loader2 className="animate-spin" aria-hidden="true" size={18} /> : null}
+              {isLoading ? "Reviewing Tasks" : "Verify Tasks"}
             </Button>
           </form>
         </div>
       </GlassCard>
+
+      <ConfirmationModal
+        open={verificationStage === "modal"}
+        onGoToX={() => window.open(siteConfig.xUrl, "_blank", "noopener,noreferrer")}
+        onVerifyAgain={handleVerifyAgain}
+      />
     </motion.div>
+  );
+}
+
+type ConfirmationModalProps = {
+  open: boolean;
+  onGoToX: () => void;
+  onVerifyAgain: () => void;
+};
+
+function ConfirmationModal({ open, onGoToX, onVerifyAgain }: ConfirmationModalProps) {
+  return (
+    <AnimatePresence>
+      {open ? (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/72 px-4 pb-4 backdrop-blur-md sm:items-center sm:pb-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="w-full max-w-md rounded-[28px] border border-white/12 bg-[#111111]/95 p-5 shadow-glass"
+            initial={{ opacity: 0, y: 32, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-lemon/30 bg-lemon/10 text-lemon">
+              <ShieldCheck aria-hidden="true" size={22} />
+            </div>
+            <h3 className="mt-5 font-pixel text-3xl text-white">Almost There!</h3>
+            <p className="mt-3 text-sm leading-7 text-white/64">
+              Before continuing, please make sure you have completed all required tasks:
+            </p>
+            <ul className="mt-4 space-y-2 text-sm leading-6 text-white/70">
+              <li>Follow our official X account</li>
+              <li>Make a post about Munchos and paste the post link</li>
+              <li>Repost the pinned post</li>
+              <li>Comment on the pinned post</li>
+            </ul>
+            <p className="mt-4 text-sm leading-7 text-white/64">
+              If you&apos;ve just completed these actions, please return and verify again. This
+              helps us maintain a fair and genuine community.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <Button type="button" variant="secondary" onClick={onGoToX}>
+                Go to X
+              </Button>
+              <Button type="button" onClick={onVerifyAgain}>
+                Verify Again
+              </Button>
+            </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 

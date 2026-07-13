@@ -2,6 +2,7 @@ export type WaitlistPayload = {
   fullName: string;
   email: string;
   xUsername: string;
+  xPostUrl: string;
   walletAddress: string;
   referralCode?: string;
   referredBy?: string;

@@ -24,28 +24,27 @@ Create `.env.local` from `.env.example`:
 GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
 NEXT_PUBLIC_SITE_URL=https://munchosnft.vercel.app
 NEXT_PUBLIC_PINNED_X_POST_URL=https://x.com/i/status/2076332062122955242
-X_API_BEARER_TOKEN=YOUR_X_API_BEARER_TOKEN
-X_PROJECT_USER_ID=
-X_PINNED_POST_ID=2076332062122955242
-X_VERIFICATION_MAX_PAGES=8
-X_VERIFICATION_CACHE_TTL_SECONDS=60
 ```
 
 If `GOOGLE_APPS_SCRIPT_URL` is not present in development, the API returns a demo success response so the UI can be tested. Production requires the Apps Script URL.
 
 For Vercel, set `NEXT_PUBLIC_SITE_URL` to the generated Vercel domain first. When `munchosnft.xyz` is connected later, update the same environment variable to `https://munchosnft.xyz` and redeploy.
 
-The project X account is `@munchonft`. The default pinned post embed points to `https://x.com/i/status/2076332062122955242`.
+The project X account is `@munchonft`. The pinned post embed points to `https://x.com/i/status/2076332062122955242`.
 
-## X Task Verification
+## X Task Confirmation
 
-The waitlist uses server-side X API checks before allowing users to submit. The app verifies:
+The waitlist uses a guided confirmation flow because the X Free Developer Plan does not support reliable programmatic verification for follow, post, repost, and comment actions.
 
-- Followed `@munchonft`
-- Liked the pinned post
-- Reposted the pinned post
+The app does not claim to verify X actions through the API. Instead, it asks users to:
 
-Add `X_API_BEARER_TOKEN` in Vercel as a secret server-side environment variable. Add `X_PROJECT_USER_ID` when possible to avoid spending an extra X API read on every verification. `X_PINNED_POST_ID` defaults to `2076332062122955242`. `X_VERIFICATION_MAX_PAGES` controls how many X API pages the verifier scans before returning a missing task. `X_VERIFICATION_CACHE_TTL_SECONDS` reduces repeated verification reads for the same username on warm server instances.
+- Follow `@munchonft`
+- Make a public post about Munchos
+- Paste the post link into the waitlist form
+- Repost the pinned post
+- Comment on the pinned post
+
+After the first `Verify Tasks` action, the app shows a confirmation modal. The second `Verify Again` action completes the guided confirmation and submits the waitlist entry to Google Sheets.
 
 ## Google Sheets Backend
 
@@ -57,7 +56,9 @@ Add `X_API_BEARER_TOKEN` in Vercel as a secret server-side environment variable.
 6. Add the deployment URL to `GOOGLE_APPS_SCRIPT_URL`.
 7. Optional: add a Script Property named `SITE_URL` with the active Vercel URL. Change it to `https://munchosnft.xyz` after the custom domain is live.
 
-The backend stores timestamp, full name, email, X username, EVM wallet address, referral code, referrer, referral count, task completion, and submission status. It prevents duplicates by wallet address, email, and X username.
+The backend stores timestamp, full name, email, X username, Munchos X post link, EVM wallet address, referral code, referrer, referral count, task completion, and submission status. It prevents duplicates by wallet address, email, and X username.
+
+The current backend script also stores the user's Munchos X post link. If your Apps Script was deployed before that field existed, paste the latest `scripts/google-apps-script/Code.gs` into Apps Script and redeploy the Web App.
 
 ## Vercel Deployment
 

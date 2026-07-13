@@ -22,13 +22,13 @@ Create `.env.local` from `.env.example`:
 
 ```bash
 GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
-NEXT_PUBLIC_SITE_URL=https://munchosnft.vercel.app
+NEXT_PUBLIC_SITE_URL=https://www.munchosapp.xyz
 NEXT_PUBLIC_PINNED_X_POST_URL=https://x.com/i/status/2076332062122955242
 ```
 
 If `GOOGLE_APPS_SCRIPT_URL` is not present in development, the API returns a demo success response so the UI can be tested. Production requires the Apps Script URL.
 
-For Vercel, set `NEXT_PUBLIC_SITE_URL` to the generated Vercel domain first. When `munchosnft.xyz` is connected later, update the same environment variable to `https://munchosnft.xyz` and redeploy.
+For Vercel, set `NEXT_PUBLIC_SITE_URL` to the active production URL. The current production domain is `https://www.munchosapp.xyz`.
 
 The project X account is `@munchonft`. The pinned post embed points to `https://x.com/i/status/2076332062122955242`.
 
@@ -54,7 +54,7 @@ After the first `Verify Tasks` action, the app shows a confirmation modal. The s
 4. Deploy as a Web App.
 5. Set access to allow requests from the deployed app.
 6. Add the deployment URL to `GOOGLE_APPS_SCRIPT_URL`.
-7. Optional: add a Script Property named `SITE_URL` with the active Vercel URL. Change it to `https://munchosnft.xyz` after the custom domain is live.
+7. Optional: add a Script Property named `SITE_URL` with the active production URL: `https://www.munchosapp.xyz`.
 
 The backend stores timestamp, full name, email, X username, Munchos X post link, EVM wallet address, referral code, referrer, referral count, task completion, and submission status. It prevents duplicates by wallet address, email, and X username.
 
@@ -66,12 +66,12 @@ The current backend script also stores the user's Munchos X post link. If your A
 2. Keep the framework preset as Next.js.
 3. Add the environment variables from `.env.example`.
 4. Deploy from the `main` branch.
-5. Copy the generated Vercel URL.
-6. Update `NEXT_PUBLIC_SITE_URL` in Vercel to that generated URL.
-7. Update the Google Apps Script `SITE_URL` script property to the same Vercel URL.
+5. Add `www.munchosapp.xyz` as the production domain in Vercel.
+6. Update `NEXT_PUBLIC_SITE_URL` in Vercel to `https://www.munchosapp.xyz`.
+7. Update the Google Apps Script `SITE_URL` script property to `https://www.munchosapp.xyz`.
 8. Redeploy after any environment variable change.
 
-When the custom domain is ready, connect `munchosnft.xyz` in Vercel, update `NEXT_PUBLIC_SITE_URL` to `https://munchosnft.xyz`, update the Apps Script `SITE_URL` property to the same value, and redeploy.
+If you temporarily use the generated Vercel URL before DNS finishes, set `NEXT_PUBLIC_SITE_URL` and the Apps Script `SITE_URL` property to that temporary URL, then change both to `https://www.munchosapp.xyz` after the custom domain is active.
 
 ## Architecture
 

@@ -5,9 +5,9 @@ export const siteConfig = {
   pinnedPostUrl:
     process.env.NEXT_PUBLIC_PINNED_X_POST_URL ??
     "https://x.com/i/status/2076332062122955242",
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://munchosnft.vercel.app",
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.munchosapp.xyz",
   chain: "Robinhood Chain",
-  supportEmail: "community@munchosnft.xyz"
+  supportEmail: "munchonfts@gmail.com"
 } as const;
 
 export const pinnedPostId = "2076332062122955242";

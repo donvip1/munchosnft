@@ -1,5 +1,5 @@
 const SHEET_NAME = "Waitlist";
-const DEFAULT_SITE_URL = "https://munchosnft.vercel.app";
+const DEFAULT_SITE_URL = "https://www.munchosapp.xyz";
 const HEADERS = [
   "Timestamp",
   "Full Name",

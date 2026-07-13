@@ -1,6 +1,6 @@
 # Munchos NFT
 
-Munchos NFT is a mobile-first Web3 waitlist application for the Robinhood Chain ecosystem. Version 1 ships the exclusive waitlist and referral system while keeping minting, fusion, evolution, staking, rewards, profiles, and marketplace modules visibly staged as Coming Soon.
+Munchos NFT is a mobile-first Web3 whitelist application for the Robinhood Chain ecosystem. Version 1 ships the exclusive whitelist and referral system while keeping minting, fusion, evolution, staking, rewards, profiles, and marketplace modules visibly staged as Coming Soon.
 
 ## Stack
 
@@ -34,17 +34,17 @@ The project X account is `@munchonft`. The pinned post embed points to `https://
 
 ## X Task Confirmation
 
-The waitlist uses a guided confirmation flow because the X Free Developer Plan does not support reliable programmatic verification for follow, post, repost, and comment actions.
+The whitelist uses a guided confirmation flow because the X Free Developer Plan does not support reliable programmatic verification for follow, post, repost, and comment actions.
 
 The app does not claim to verify X actions through the API. Instead, it asks users to:
 
 - Follow `@munchonft`
 - Make a public post about Munchos
-- Paste the post link into the waitlist form
+- Paste the post link into the whitelist form
 - Repost the pinned post
 - Comment on the pinned post
 
-After the first `Verify Tasks` action, the app shows a confirmation modal. The second `Verify Again` action completes the guided confirmation and submits the waitlist entry to Google Sheets.
+After the first `Verify Tasks` action, the app shows a confirmation modal. The second `Verify Again` action completes the guided confirmation and submits the whitelist entry to Google Sheets.
 
 ## Google Sheets Backend
 
@@ -76,7 +76,7 @@ If you temporarily use the generated Vercel URL before DNS finishes, set `NEXT_P
 ## Architecture
 
 - `src/app`: App Router pages and API routes.
-- `src/features`: Feature modules for home and waitlist surfaces.
+- `src/features`: Feature modules for home and whitelist surfaces.
 - `src/components`: Shared layout and UI primitives.
 - `src/lib`: Business logic, validation, referral helpers, and API clients.
 - `src/config`: Product, roadmap, social, and feature configuration.

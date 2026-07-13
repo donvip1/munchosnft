@@ -1,4 +1,4 @@
-import type { WaitlistPayload } from "@/types/waitlist";
+import type { WhitelistPayload } from "@/types/whitelist";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const walletPattern = /^0x[a-fA-F0-9]{40}$/;
@@ -14,8 +14,8 @@ export function normalizeWallet(value: string) {
   return value.trim().toLowerCase();
 }
 
-export function validateWaitlistPayload(payload: WaitlistPayload) {
-  const fieldErrors: Partial<Record<keyof WaitlistPayload, string>> = {};
+export function validateWhitelistPayload(payload: WhitelistPayload) {
+  const fieldErrors: Partial<Record<keyof WhitelistPayload, string>> = {};
 
   if (!payload.fullName.trim()) {
     fieldErrors.fullName = "Full name is required.";
@@ -47,7 +47,7 @@ export function validateWaitlistPayload(payload: WaitlistPayload) {
   };
 }
 
-export function sanitizeWaitlistPayload(payload: WaitlistPayload): WaitlistPayload {
+export function sanitizeWhitelistPayload(payload: WhitelistPayload): WhitelistPayload {
   const referralCode = payload.referralCode?.trim().toUpperCase();
   const referredBy = payload.referredBy?.trim().toUpperCase();
 

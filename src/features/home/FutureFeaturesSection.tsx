@@ -9,7 +9,7 @@ export function FutureFeaturesSection() {
           title="Built Like an App, Ready for the Chain"
         >
           Munchos NFT is structured for wallet sessions, smart contracts, NFT state, rewards, and
-          marketplace flows without replacing the waitlist foundation.
+          marketplace flows without replacing the whitelist foundation.
         </SectionHeading>
       </div>
     </section>

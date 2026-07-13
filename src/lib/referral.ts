@@ -9,6 +9,7 @@ export function generateReferralCode(seed = crypto.randomUUID()) {
 
 export function buildReferralLink(code: string) {
   const url = new URL(siteConfig.siteUrl);
+  url.pathname = "/whitelist";
   url.searchParams.set("ref", code);
 
   return url.toString();

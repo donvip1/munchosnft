@@ -35,7 +35,7 @@ export function SiteHeader() {
 
           <div className="hidden items-center gap-3 md:flex">
             <StatusPill tone="green">Robinhood Chain Native</StatusPill>
-            <StatusPill tone="purple">V1 Waitlist</StatusPill>
+            <StatusPill tone="purple">V1 Whitelist</StatusPill>
           </div>
 
           <div className="flex items-center gap-2">

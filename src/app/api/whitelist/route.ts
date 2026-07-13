@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 
 import { buildReferralLink, generateReferralCode } from "@/lib/referral";
-import { postToGoogleAppsScript } from "@/lib/waitlist-api";
-import { sanitizeWaitlistPayload, validateWaitlistPayload } from "@/lib/validation";
-import type { WaitlistPayload, WaitlistResponse } from "@/types/waitlist";
+import { postToGoogleAppsScript } from "@/lib/whitelist-api";
+import { sanitizeWhitelistPayload, validateWhitelistPayload } from "@/lib/validation";
+import type { WhitelistPayload, WhitelistResponse } from "@/types/whitelist";
 
 export async function POST(request: Request) {
-  let payload: WaitlistPayload;
+  let payload: WhitelistPayload;
 
   try {
-    payload = (await request.json()) as WaitlistPayload;
+    payload = (await request.json()) as WhitelistPayload;
   } catch {
-    return NextResponse.json<WaitlistResponse>(
+    return NextResponse.json<WhitelistResponse>(
       {
         ok: false,
         message: "Invalid request payload."
@@ -20,11 +20,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const sanitized = sanitizeWaitlistPayload(payload);
-  const validation = validateWaitlistPayload(sanitized);
+  const sanitized = sanitizeWhitelistPayload(payload);
+  const validation = validateWhitelistPayload(sanitized);
 
   if (!validation.valid) {
-    return NextResponse.json<WaitlistResponse>(
+    return NextResponse.json<WhitelistResponse>(
       {
         ok: false,
         message: "Please correct the highlighted fields.",
@@ -39,10 +39,10 @@ export async function POST(request: Request) {
     Boolean(endpoint) && !endpoint?.includes("YOUR_DEPLOYMENT_ID");
 
   if (!hasConfiguredEndpoint && process.env.NODE_ENV === "production") {
-    return NextResponse.json<WaitlistResponse>(
+    return NextResponse.json<WhitelistResponse>(
       {
         ok: false,
-        message: "Waitlist backend is not configured."
+        message: "Whitelist backend is not configured."
       },
       { status: 500 }
     );
@@ -51,18 +51,18 @@ export async function POST(request: Request) {
   if (!hasConfiguredEndpoint) {
     const referralCode = generateReferralCode(sanitized.walletAddress);
 
-    return NextResponse.json<WaitlistResponse>({
+    return NextResponse.json<WhitelistResponse>({
       ok: true,
       status: "registered",
       message: "Demo registration complete. Add GOOGLE_APPS_SCRIPT_URL to store entries.",
       referralCode,
       referralLink: buildReferralLink(referralCode),
       referralCount: 0,
-      waitlistPosition: null,
+      whitelistPosition: null,
       rewardTier: null
     });
   }
 
   const response = await postToGoogleAppsScript(endpoint as string, sanitized);
-  return NextResponse.json<WaitlistResponse>(response, { status: response.ok ? 200 : 400 });
+  return NextResponse.json<WhitelistResponse>(response, { status: response.ok ? 200 : 400 });
 }

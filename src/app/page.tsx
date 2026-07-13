@@ -4,7 +4,7 @@ import { FAQSection } from "@/features/home/FAQSection";
 import { FutureFeaturesSection } from "@/features/home/FutureFeaturesSection";
 import { HeroSection } from "@/features/home/HeroSection";
 import { RoadmapSection } from "@/features/home/RoadmapSection";
-import { WaitlistSection } from "@/features/home/WaitlistSection";
+import { WhitelistSection } from "@/features/home/WhitelistSection";
 
 export default function Home() {
   return (
@@ -12,7 +12,7 @@ export default function Home() {
       <SiteHeader />
       <main>
         <HeroSection />
-        <WaitlistSection />
+        <WhitelistSection />
         <FutureFeaturesSection />
         <RoadmapSection />
         <FAQSection />

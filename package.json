@@ -2,7 +2,7 @@
   "name": "munchos-nft",
   "version": "0.1.0",
   "private": true,
-  "description": "Munchos NFT waitlist application for the Robinhood Chain ecosystem.",
+  "description": "Munchos NFT whitelist application for the Robinhood Chain ecosystem.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -1,13 +1,14 @@
 import { ShieldCheck } from "lucide-react";
 
+import { LinkButton } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
-export function WaitlistSection() {
+export function WhitelistSection() {
   return (
-    <section id="waitlist" className="px-4 py-20 sm:px-6 lg:px-8">
+    <section id="whitelist" className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <SectionHeading eyebrow="Version 1" title="Exclusive Waitlist System">
+        <SectionHeading eyebrow="Version 1" title="Exclusive Whitelist System">
           The first live module for Munchos App captures community demand, task completion, wallet
           identity, referrals, and launch momentum.
         </SectionHeading>
@@ -20,9 +21,14 @@ export function WaitlistSection() {
             Secure your Munchos NFT access
           </h3>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/62 sm:text-base">
-            Open the dedicated waitlist page to complete the X tasks, submit your wallet, and
+            Open the dedicated whitelist page to complete the X tasks, submit your wallet, and
             receive your referral link.
           </p>
+          <div className="mt-6 flex justify-center">
+            <LinkButton href="/whitelist" size="lg">
+              Join Whitelist
+            </LinkButton>
+          </div>
         </GlassCard>
       </div>
     </section>

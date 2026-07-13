@@ -12,7 +12,7 @@ export const siteConfig = {
 
 export const pinnedPostId = "2076332062122955242";
 
-export const waitlistTaskActions = [
+export const whitelistTaskActions = [
   {
     id: "follow",
     title: `Follow @${siteConfig.handle}`,

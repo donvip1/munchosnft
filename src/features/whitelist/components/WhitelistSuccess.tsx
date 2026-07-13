@@ -5,16 +5,16 @@ import { useState } from "react";
 
 import { Button, LinkButton } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
-import type { WaitlistSuccess as WaitlistSuccessType } from "@/types/waitlist";
+import type { WhitelistSuccess as WhitelistSuccessType } from "@/types/whitelist";
 
-type WaitlistSuccessProps = {
-  result: WaitlistSuccessType;
+type WhitelistSuccessProps = {
+  result: WhitelistSuccessType;
 };
 
-export function WaitlistSuccess({ result }: WaitlistSuccessProps) {
+export function WhitelistSuccess({ result }: WhitelistSuccessProps) {
   const [copied, setCopied] = useState(false);
   const shareText = encodeURIComponent(
-    `I joined the Munchos NFT waitlist, built for Robinhood Chain. Join with my referral link: ${result.referralLink}`
+    `I joined the Munchos NFT whitelist, built for Robinhood Chain. Join with my referral link: ${result.referralLink}`
   );
 
   async function copyLink() {
@@ -32,7 +32,7 @@ export function WaitlistSuccess({ result }: WaitlistSuccessProps) {
         <div>
           <p className="font-pixel text-2xl text-white">🎉 Welcome to Munchos NFT!</p>
           <p className="mt-2 text-sm leading-6 text-white/64">
-            Your waitlist registration has been received successfully.
+            Your whitelist registration has been received successfully.
           </p>
         </div>
       </div>
@@ -47,7 +47,7 @@ export function WaitlistSuccess({ result }: WaitlistSuccessProps) {
           <p className="mt-2 font-pixel text-xl text-white">{result.referralCount}</p>
         </div>
         <div className="rounded-3xl border border-white/10 bg-black/28 p-4">
-          <p className="font-pixel text-xs uppercase text-white/44">Waitlist Position</p>
+          <p className="font-pixel text-xs uppercase text-white/44">Whitelist Position</p>
           <p className="mt-2 font-pixel text-xl text-white/42">Coming Soon</p>
         </div>
         <div className="rounded-3xl border border-white/10 bg-black/28 p-4">

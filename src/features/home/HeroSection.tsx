@@ -2,9 +2,8 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
-import { LinkButton } from "@/components/ui/Button";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { siteConfig } from "@/config/site";
 
@@ -48,18 +47,6 @@ export function HeroSection() {
           <p className="mx-auto mt-6 max-w-2xl font-pixel text-xl leading-relaxed text-lemon sm:text-2xl">
             Collect. Fuse. Evolve.
           </p>
-          <p className="mx-auto mt-3 max-w-2xl text-base leading-8 text-white/64 sm:text-lg">
-            Built for Robinhood Chain as a scalable Web3 application layer, not a static NFT page.
-          </p>
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <LinkButton href="/waitlist" size="lg">
-              Join Waitlist
-            </LinkButton>
-            <LinkButton href="#features" size="lg" variant="secondary">
-              Learn More
-              <ChevronDown aria-hidden="true" size={18} />
-            </LinkButton>
-          </div>
         </div>
       </div>
     </section>

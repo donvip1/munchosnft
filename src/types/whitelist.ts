@@ -1,4 +1,4 @@
-export type WaitlistPayload = {
+export type WhitelistPayload = {
   fullName: string;
   email: string;
   xUsername: string;
@@ -9,21 +9,21 @@ export type WaitlistPayload = {
   taskCompleted: boolean;
 };
 
-export type WaitlistSuccess = {
+export type WhitelistSuccess = {
   ok: true;
   status: "registered" | "duplicate";
   message: string;
   referralCode: string;
   referralLink: string;
   referralCount: number;
-  waitlistPosition?: number | null;
+  whitelistPosition?: number | null;
   rewardTier?: string | null;
 };
 
-export type WaitlistFailure = {
+export type WhitelistFailure = {
   ok: false;
   message: string;
-  fieldErrors?: Partial<Record<keyof WaitlistPayload, string>>;
+  fieldErrors?: Partial<Record<keyof WhitelistPayload, string>>;
 };
 
-export type WaitlistResponse = WaitlistSuccess | WaitlistFailure;
+export type WhitelistResponse = WhitelistSuccess | WhitelistFailure;

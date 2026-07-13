@@ -7,7 +7,7 @@ export function RoadmapSection() {
   return (
     <section id="roadmap" className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <SectionHeading eyebrow="Roadmap" title="From Waitlist to Evolution Engine" />
+        <SectionHeading eyebrow="Roadmap" title="From Whitelist to Evolution Engine" />
 
         <div className="mt-12 grid gap-4 lg:grid-cols-5">
           {roadmap.map((item, index) => (

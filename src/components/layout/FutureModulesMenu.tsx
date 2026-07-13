@@ -17,7 +17,7 @@ import {
   X,
   type LucideIcon
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { ComingSoonModal } from "@/components/ui/ComingSoonModal";
@@ -42,87 +42,96 @@ type Feature = (typeof futureFeatures)[number];
 export function FutureModulesMenu() {
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuId = useId();
 
   function openFeature(feature: Feature) {
     setMenuOpen(false);
     setSelectedFeature(feature);
   }
 
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: MouseEvent | TouchEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpen]);
+
   return (
-    <>
+    <div className="relative" ref={menuRef}>
       <Button
-        aria-label="Open future modules menu"
+        aria-controls={menuId}
+        aria-expanded={menuOpen}
+        aria-haspopup="menu"
+        aria-label={menuOpen ? "Close future modules menu" : "Open future modules menu"}
         className="h-9 w-9 px-0 sm:h-10 sm:w-10"
         size="sm"
-        title="Open future modules"
+        title={menuOpen ? "Close future modules" : "Open future modules"}
         type="button"
         variant="secondary"
-        onClick={() => setMenuOpen(true)}
+        onClick={() => setMenuOpen((open) => !open)}
       >
-        <Menu aria-hidden="true" size={18} />
+        {menuOpen ? <X aria-hidden="true" size={18} /> : <Menu aria-hidden="true" size={18} />}
       </Button>
 
       <AnimatePresence>
         {menuOpen ? (
           <motion.div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/72 px-4 pb-4 pt-4 backdrop-blur-md sm:items-center sm:py-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setMenuOpen(false)}
+            aria-label="Future modules"
+            className="fixed inset-x-0 top-16 z-30 border-b border-white/12 bg-ink shadow-glass sm:top-20"
+            id={menuId}
+            role="menu"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.18 }}
           >
-            <motion.div
-              className="flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-[28px] border border-white/12 bg-[#111111]/95 p-4 shadow-glass sm:max-h-[calc(100dvh-4rem)] sm:p-5"
-              initial={{ opacity: 0, y: 32, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 24, scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-white/18" />
+            <ul className="mx-auto max-h-[min(calc(100dvh-4rem),28rem)] w-full max-w-7xl overflow-y-auto px-4 py-2 sm:max-h-[min(calc(100dvh-5rem),30rem)] sm:px-6 lg:px-8">
+              {futureFeatures.map((feature) => {
+                const Icon = iconMap[feature.icon] ?? Sparkles;
 
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-pixel text-xs uppercase text-lemon">Coming Soon</p>
-                  <h3 className="mt-2 font-pixel text-2xl text-white">Future Modules</h3>
-                  <p className="mt-2 text-sm leading-6 text-white/58">
-                    Tap a module to preview what is planned.
-                  </p>
-                </div>
-                <button
-                  aria-label="Close future modules menu"
-                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-white/70 transition hover:text-white"
-                  type="button"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <X aria-hidden="true" size={18} />
-                </button>
-              </div>
-
-              <div className="mt-5 grid max-h-[calc(100dvh-12rem)] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:max-h-[430px]">
-                {futureFeatures.map((feature) => {
-                  const Icon = iconMap[feature.icon] ?? Sparkles;
-
-                  return (
+                return (
+                  <li className="border-b border-white/[0.08] last:border-b-0" key={feature.title}>
                     <button
-                      className="group flex min-h-16 w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] p-3 text-left transition duration-200 hover:border-lemon/35 hover:bg-white/[0.07]"
-                      key={feature.title}
+                      className="group flex min-h-11 w-full items-center gap-3 py-2.5 text-left transition duration-200 hover:bg-white/[0.045] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lemon sm:min-h-12"
+                      role="menuitem"
                       type="button"
                       onClick={() => openFeature(feature)}
                     >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/30 text-lemon transition group-hover:border-lemon/35">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center text-lemon transition group-hover:text-lemon-soft">
                         <Icon aria-hidden="true" size={17} />
                       </span>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-balance font-pixel text-xs leading-5 text-white sm:text-sm">
+                      <span className="min-w-0 flex-1">
+                        <span className="block break-words font-pixel text-sm leading-5 text-white sm:text-base">
                           {feature.title}
-                        </h4>
-                      </div>
+                        </span>
+                      </span>
                     </button>
-                  );
-                })}
-              </div>
-            </motion.div>
+                  </li>
+                );
+              })}
+            </ul>
           </motion.div>
         ) : null}
       </AnimatePresence>
@@ -137,6 +146,6 @@ export function FutureModulesMenu() {
         open={Boolean(selectedFeature)}
         onClose={() => setSelectedFeature(null)}
       />
-    </>
+    </div>
   );
 }

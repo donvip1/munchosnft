@@ -9,15 +9,15 @@ import { FormEvent, ReactNode, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusPill } from "@/components/ui/StatusPill";
-import { siteConfig, waitlistTaskActions } from "@/config/site";
-import { validateWaitlistPayload } from "@/lib/validation";
-import { submitWaitlist } from "@/lib/waitlist-api";
-import type { WaitlistFailure, WaitlistPayload, WaitlistSuccess as WaitlistSuccessType } from "@/types/waitlist";
+import { siteConfig, whitelistTaskActions } from "@/config/site";
+import { validateWhitelistPayload } from "@/lib/validation";
+import { submitWhitelist } from "@/lib/whitelist-api";
+import type { WhitelistFailure, WhitelistPayload, WhitelistSuccess as WhitelistSuccessType } from "@/types/whitelist";
 
-import { WaitlistSuccess } from "./WaitlistSuccess";
+import { WhitelistSuccess } from "./WhitelistSuccess";
 import { XPostEmbed } from "./XPostEmbed";
 
-const initialState: WaitlistPayload = {
+const initialState: WhitelistPayload = {
   fullName: "",
   email: "",
   xUsername: "",
@@ -37,7 +37,7 @@ const firstVerificationMessages = [
 const finalVerificationMessages = [
   "Finalizing your submission...",
   "Completing registration...",
-  "Securing your waitlist spot..."
+  "Securing your whitelist spot..."
 ];
 
 type VerificationStage = "idle" | "first-loading" | "modal" | "second-loading";
@@ -46,27 +46,27 @@ function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-export function WaitlistCard() {
+export function WhitelistCard() {
   const searchParams = useSearchParams();
   const referredBy = useMemo(() => searchParams.get("ref") ?? "", [searchParams]);
-  const [form, setForm] = useState<WaitlistPayload>({ ...initialState, referredBy });
-  const [fieldErrors, setFieldErrors] = useState<WaitlistFailure["fieldErrors"]>({});
+  const [form, setForm] = useState<WhitelistPayload>({ ...initialState, referredBy });
+  const [fieldErrors, setFieldErrors] = useState<WhitelistFailure["fieldErrors"]>({});
   const [statusMessage, setStatusMessage] = useState("");
   const [verificationStage, setVerificationStage] = useState<VerificationStage>("idle");
   const [loadingMessage, setLoadingMessage] = useState("");
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState<WaitlistSuccessType | null>(null);
+  const [success, setSuccess] = useState<WhitelistSuccessType | null>(null);
   const isLoading =
     verificationStage === "first-loading" || verificationStage === "second-loading" || isSubmitting;
 
-  function updateField<K extends keyof WaitlistPayload>(field: K, value: WaitlistPayload[K]) {
+  function updateField<K extends keyof WhitelistPayload>(field: K, value: WhitelistPayload[K]) {
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
     setStatusMessage("");
   }
 
-  function handleTaskClick(task: (typeof waitlistTaskActions)[number]) {
+  function handleTaskClick(task: (typeof whitelistTaskActions)[number]) {
     window.open(task.url, "_blank", "noopener,noreferrer");
     setStatusMessage("");
   }
@@ -77,7 +77,7 @@ export function WaitlistCard() {
       referredBy,
       taskCompleted: true
     };
-    const validation = validateWaitlistPayload(candidate);
+    const validation = validateWhitelistPayload(candidate);
 
     if (!validation.valid) {
       setFieldErrors(validation.fieldErrors);
@@ -135,7 +135,7 @@ export function WaitlistCard() {
     await runLoading(finalVerificationMessages, 3500);
     setIsSubmitting(true);
 
-    const response = await submitWaitlist({ ...form, referredBy, taskCompleted: true });
+    const response = await submitWhitelist({ ...form, referredBy, taskCompleted: true });
     setIsSubmitting(false);
 
     if (!response.ok) {
@@ -149,7 +149,7 @@ export function WaitlistCard() {
   }
 
   if (success) {
-    return <WaitlistSuccess result={success} />;
+    return <WhitelistSuccess result={success} />;
   }
 
   return (
@@ -172,7 +172,7 @@ export function WaitlistCard() {
             />
           </div>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <StatusPill tone="green">Exclusive Waitlist</StatusPill>
+            <StatusPill tone="green">Exclusive Whitelist</StatusPill>
             <StatusPill tone="purple">{siteConfig.chain}</StatusPill>
           </div>
           <h2 className="mt-5 font-pixel text-3xl leading-tight text-white sm:text-4xl">
@@ -197,7 +197,7 @@ export function WaitlistCard() {
             </div>
 
             <div className="mt-5 space-y-3">
-              {waitlistTaskActions.map((task) => (
+              {whitelistTaskActions.map((task) => (
                 <button
                   className="group flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black/24 p-3 text-left transition hover:border-lemon/35 hover:bg-white/[0.06]"
                   key={task.id}
@@ -236,7 +236,7 @@ export function WaitlistCard() {
                       Comment on the pinned post
                     </p>
                     <p className="mt-1 text-xs leading-5 text-white/50">
-                      Leave a genuine comment before submitting your waitlist entry.
+                      Leave a genuine comment before submitting your whitelist entry.
                     </p>
                   </div>
                 </div>

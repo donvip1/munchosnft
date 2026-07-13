@@ -8,7 +8,16 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"]
   },
-  outputFileTracingRoot: __dirname
+  outputFileTracingRoot: __dirname,
+  async redirects() {
+    return [
+      {
+        source: "/waitlist",
+        destination: "/whitelist",
+        permanent: true
+      }
+    ];
+  }
 };
 
 export default nextConfig;

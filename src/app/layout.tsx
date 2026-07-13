@@ -12,20 +12,20 @@ export const metadata: Metadata = {
     template: "%s | Munchos NFT"
   },
   description:
-    "Munchos NFT is a mobile-first Web3 application for the Robinhood Chain ecosystem, launching with an exclusive waitlist and referral system.",
+    "Munchos NFT is a mobile-first Web3 application for the Robinhood Chain ecosystem, launching with an exclusive whitelist and referral system.",
   keywords: [
     "Munchos NFT",
     "munchosnft",
     "munchonft",
     "Robinhood Chain",
-    "NFT waitlist",
+    "NFT whitelist",
     "NFT fusion",
     "Web3 gaming"
   ],
   openGraph: {
     title: "Munchos NFT",
     description:
-      "Join the exclusive Munchos NFT waitlist for a Robinhood Chain-native Web3 application.",
+      "Join the exclusive Munchos NFT whitelist for a Robinhood Chain-native Web3 application.",
     url: siteConfig.siteUrl,
     siteName: "Munchos NFT",
     images: [

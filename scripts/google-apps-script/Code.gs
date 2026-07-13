@@ -1,4 +1,4 @@
-const SHEET_NAME = "Waitlist";
+const SHEET_NAME = "Whitelist";
 const DEFAULT_SITE_URL = "https://www.munchosapp.xyz";
 const HEADERS = [
   "Timestamp",
@@ -17,7 +17,7 @@ const HEADERS = [
 function doGet() {
   return jsonResponse({
     ok: true,
-    message: "Munchos NFT waitlist backend is online."
+    message: "Munchos NFT whitelist backend is online."
   });
 }
 
@@ -33,7 +33,7 @@ function doPost(event) {
       return jsonResponse(validation);
     }
 
-    const sheet = getWaitlistSheet();
+    const sheet = getWhitelistSheet();
     const headers = ensureHeaders(sheet);
     const rows = sheet.getDataRange().getValues();
     const existing = findExisting(rows, headers, payload);
@@ -46,7 +46,7 @@ function doPost(event) {
         referralCode: existing.referralCode,
         referralLink: buildReferralLink(existing.referralCode),
         referralCount: existing.referralCount,
-        waitlistPosition: null,
+        whitelistPosition: null,
         rewardTier: null
       });
     }
@@ -80,11 +80,11 @@ function doPost(event) {
     return jsonResponse({
       ok: true,
       status: "registered",
-      message: "Your waitlist registration has been received successfully.",
+      message: "Your whitelist registration has been received successfully.",
       referralCode: referralCode,
       referralLink: buildReferralLink(referralCode),
       referralCount: referralCount,
-      waitlistPosition: null,
+      whitelistPosition: null,
       rewardTier: null
     });
   } catch (error) {
@@ -131,7 +131,7 @@ function validatePayload(payload) {
   return { ok: true };
 }
 
-function getWaitlistSheet() {
+function getWhitelistSheet() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = spreadsheet.getSheetByName(SHEET_NAME);
 
@@ -268,7 +268,7 @@ function normalizeUrl(value) {
 }
 
 function buildReferralLink(code) {
-  return getSiteUrl() + "/?ref=" + encodeURIComponent(code);
+  return getSiteUrl() + "/whitelist?ref=" + encodeURIComponent(code);
 }
 
 function getSiteUrl() {

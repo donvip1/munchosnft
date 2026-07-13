@@ -21,7 +21,6 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { ComingSoonModal } from "@/components/ui/ComingSoonModal";
-import { StatusPill } from "@/components/ui/StatusPill";
 import { futureFeatures } from "@/config/site";
 
 const iconMap: Record<string, LucideIcon> = {
@@ -66,17 +65,17 @@ export function FutureModulesMenu() {
       <AnimatePresence>
         {menuOpen ? (
           <motion.div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/72 px-4 pb-4 pt-24 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/72 px-4 pb-4 pt-4 backdrop-blur-md sm:items-center sm:py-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setMenuOpen(false)}
           >
             <motion.div
-              className="w-full max-w-md overflow-hidden rounded-[28px] border border-white/12 bg-[#111111]/95 p-4 shadow-glass sm:p-5"
-              initial={{ opacity: 0, y: 72 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 48 }}
+              className="flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-[28px] border border-white/12 bg-[#111111]/95 p-4 shadow-glass sm:max-h-[calc(100dvh-4rem)] sm:p-5"
+              initial={{ opacity: 0, y: 32, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 24, scale: 0.98 }}
               transition={{ duration: 0.2 }}
               onClick={(event) => event.stopPropagation()}
             >
@@ -86,6 +85,9 @@ export function FutureModulesMenu() {
                 <div>
                   <p className="font-pixel text-xs uppercase text-lemon">Coming Soon</p>
                   <h3 className="mt-2 font-pixel text-2xl text-white">Future Modules</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/58">
+                    Tap a module to preview what is planned.
+                  </p>
                 </div>
                 <button
                   aria-label="Close future modules menu"
@@ -97,28 +99,24 @@ export function FutureModulesMenu() {
                 </button>
               </div>
 
-              <div className="mt-5 max-h-[58dvh] space-y-3 overflow-y-auto pr-1 sm:max-h-[62dvh]">
+              <div className="mt-5 grid max-h-[calc(100dvh-12rem)] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:max-h-[430px]">
                 {futureFeatures.map((feature) => {
                   const Icon = iconMap[feature.icon] ?? Sparkles;
 
                   return (
                     <button
-                      className="group flex w-full items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.045] p-4 text-left transition duration-200 hover:border-lemon/35 hover:bg-white/[0.07]"
+                      className="group flex min-h-16 w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] p-3 text-left transition duration-200 hover:border-lemon/35 hover:bg-white/[0.07]"
                       key={feature.title}
                       type="button"
                       onClick={() => openFeature(feature)}
                     >
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-lemon transition group-hover:border-lemon/35">
-                        <Icon aria-hidden="true" size={20} />
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/30 text-lemon transition group-hover:border-lemon/35">
+                        <Icon aria-hidden="true" size={17} />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <h4 className="font-pixel text-base text-white">{feature.title}</h4>
-                          <StatusPill tone="white">Soon</StatusPill>
-                        </div>
-                        <p className="mt-2 text-sm leading-6 text-white/58">
-                          {feature.description}
-                        </p>
+                        <h4 className="text-balance font-pixel text-xs leading-5 text-white sm:text-sm">
+                          {feature.title}
+                        </h4>
                       </div>
                     </button>
                   );

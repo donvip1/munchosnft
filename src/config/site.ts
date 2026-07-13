@@ -26,7 +26,7 @@ export const whitelistTaskActions = [
     description: "Create a public X post about Munchos, then paste the post link in the form.",
     actionLabel: "Create Post",
     url: `https://x.com/intent/tweet?text=${encodeURIComponent(
-      "Munchos NFT is building a Robinhood Chain-native app for NFT fusion, minting, evolution, rewards, and marketplace expansion."
+      "@munchonft  is building a Robinhood Chain-native app for NFT fusion, minting, evolution, rewards, and marketplace expansion.\n\nJoin the waitlist:  https://www.munchosapp.xyz/whitelist"
     )}`
   },
   {

@@ -66,24 +66,26 @@ export function FutureModulesMenu() {
       <AnimatePresence>
         {menuOpen ? (
           <motion.div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/72 px-4 pb-4 backdrop-blur-md sm:items-center sm:pb-0"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/72 px-4 pb-4 pt-24 backdrop-blur-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setMenuOpen(false)}
           >
             <motion.div
-              className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-white/12 bg-[#111111]/95 p-5 shadow-glass"
-              initial={{ opacity: 0, y: 32, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 24, scale: 0.98 }}
+              className="w-full max-w-md overflow-hidden rounded-[28px] border border-white/12 bg-[#111111]/95 p-4 shadow-glass sm:p-5"
+              initial={{ opacity: 0, y: 72 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 48 }}
               transition={{ duration: 0.2 }}
               onClick={(event) => event.stopPropagation()}
             >
+              <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-white/18" />
+
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-pixel text-xs uppercase text-lemon">Coming Soon</p>
-                  <h3 className="mt-2 font-pixel text-3xl text-white">Future Modules</h3>
+                  <h3 className="mt-2 font-pixel text-2xl text-white">Future Modules</h3>
                 </div>
                 <button
                   aria-label="Close future modules menu"
@@ -95,25 +97,29 @@ export function FutureModulesMenu() {
                 </button>
               </div>
 
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-5 max-h-[58dvh] space-y-3 overflow-y-auto pr-1 sm:max-h-[62dvh]">
                 {futureFeatures.map((feature) => {
                   const Icon = iconMap[feature.icon] ?? Sparkles;
 
                   return (
                     <button
-                      className="group min-h-44 rounded-[24px] border border-white/10 bg-white/[0.045] p-5 text-left transition duration-200 hover:border-lemon/35 hover:bg-white/[0.07]"
+                      className="group flex w-full items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.045] p-4 text-left transition duration-200 hover:border-lemon/35 hover:bg-white/[0.07]"
                       key={feature.title}
                       type="button"
                       onClick={() => openFeature(feature)}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-lemon transition group-hover:border-lemon/35">
-                          <Icon aria-hidden="true" size={20} />
-                        </span>
-                        <StatusPill tone="white">Soon</StatusPill>
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-lemon transition group-hover:border-lemon/35">
+                        <Icon aria-hidden="true" size={20} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <h4 className="font-pixel text-base text-white">{feature.title}</h4>
+                          <StatusPill tone="white">Soon</StatusPill>
+                        </div>
+                        <p className="mt-2 text-sm leading-6 text-white/58">
+                          {feature.description}
+                        </p>
                       </div>
-                      <h4 className="mt-5 font-pixel text-lg text-white">{feature.title}</h4>
-                      <p className="mt-3 text-sm leading-6 text-white/58">{feature.description}</p>
                     </button>
                   );
                 })}

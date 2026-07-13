@@ -37,17 +37,15 @@ const iconMap: Record<string, LucideIcon> = {
   Wallet
 };
 
-type Feature = (typeof futureFeatures)[number];
-
 export function FutureModulesMenu() {
-  const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
 
-  function openFeature(feature: Feature) {
+  function openComingSoon() {
     setMenuOpen(false);
-    setSelectedFeature(feature);
+    setComingSoonOpen(true);
   }
 
   useEffect(() => {
@@ -117,7 +115,7 @@ export function FutureModulesMenu() {
                       className="group flex min-h-11 w-full items-center gap-3 py-2.5 text-left transition duration-200 hover:bg-white/[0.045] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lemon sm:min-h-12"
                       role="menuitem"
                       type="button"
-                      onClick={() => openFeature(feature)}
+                      onClick={openComingSoon}
                     >
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center text-lemon transition group-hover:text-lemon-soft">
                         <Icon aria-hidden="true" size={17} />
@@ -137,14 +135,9 @@ export function FutureModulesMenu() {
       </AnimatePresence>
 
       <ComingSoonModal
-        title={selectedFeature?.title ?? ""}
-        description={
-          selectedFeature
-            ? `${selectedFeature.description} This module will connect into the same scalable Robinhood Chain-native architecture.`
-            : ""
-        }
-        open={Boolean(selectedFeature)}
-        onClose={() => setSelectedFeature(null)}
+        title="Coming Soon"
+        open={comingSoonOpen}
+        onClose={() => setComingSoonOpen(false)}
       />
     </div>
   );

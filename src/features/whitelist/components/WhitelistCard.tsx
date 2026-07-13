@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ExternalLink, Loader2, MessageCircle, ShieldCheck, Twitter, WalletCards } from "lucide-react";
+import { Check, ExternalLink, Loader2, ShieldCheck, Twitter, WalletCards } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, ReactNode, useMemo, useState } from "react";
@@ -15,7 +15,6 @@ import { submitWhitelist } from "@/lib/whitelist-api";
 import type { WhitelistFailure, WhitelistPayload, WhitelistSuccess as WhitelistSuccessType } from "@/types/whitelist";
 
 import { WhitelistSuccess } from "./WhitelistSuccess";
-import { XPostEmbed } from "./XPostEmbed";
 
 const initialState: WhitelistPayload = {
   fullName: "",
@@ -221,28 +220,6 @@ export function WhitelistCard() {
                   </span>
                 </button>
               ))}
-
-              <button
-                className="w-full rounded-2xl border border-white/10 bg-black/24 p-3 text-left transition hover:border-lemon/35 hover:bg-white/[0.06]"
-                type="button"
-                onClick={() => window.open(siteConfig.pinnedPostUrl, "_blank", "noopener,noreferrer")}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-lemon">
-                    <MessageCircle aria-hidden="true" size={17} />
-                  </span>
-                  <div>
-                    <p className="font-pixel text-sm uppercase text-white">
-                      Comment on the pinned post
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-white/50">
-                      Leave a genuine comment before submitting your whitelist entry.
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              <XPostEmbed />
             </div>
           </div>
 

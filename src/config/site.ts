@@ -35,6 +35,13 @@ export const whitelistTaskActions = [
     description: "Open the repost action for the pinned Munchos NFT post.",
     actionLabel: "Repost",
     url: `https://x.com/intent/retweet?tweet_id=${pinnedPostId}`
+  },
+  {
+    id: "comment",
+    title: "Comment on the pinned post",
+    description: "Open the pinned post and leave a genuine comment before verifying.",
+    actionLabel: "Open Post",
+    url: siteConfig.pinnedPostUrl
   }
 ] as const;
 

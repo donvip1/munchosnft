@@ -2,13 +2,14 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Lock, X } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/Button";
 
 type ComingSoonModalProps = {
   title: string;
-  description: string;
+  description?: string;
   open: boolean;
   onClose: () => void;
   actionLabel?: string;
@@ -23,11 +24,21 @@ export function ComingSoonModal({
   actionLabel = "Close",
   children
 }: ComingSoonModalProps) {
-  return (
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/72 px-4 pb-4 backdrop-blur-md sm:items-center sm:pb-0"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 px-4 py-4 backdrop-blur-md"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -55,7 +66,9 @@ export function ComingSoonModal({
               </button>
             </div>
             <h3 className="mt-5 font-pixel text-2xl text-white">{title}</h3>
-            <p className="mt-3 text-sm leading-7 text-white/64">{description}</p>
+            {description ? (
+              <p className="mt-3 text-sm leading-7 text-white/64">{description}</p>
+            ) : null}
             {children ? <div className="mt-5">{children}</div> : null}
             <Button className="mt-6 w-full" type="button" onClick={onClose}>
               {actionLabel}
@@ -63,6 +76,7 @@ export function ComingSoonModal({
           </motion.div>
         </motion.div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

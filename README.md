@@ -23,14 +23,14 @@ Create `.env.local` from `.env.example`:
 ```bash
 GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
 NEXT_PUBLIC_SITE_URL=https://www.munchosapp.xyz
-NEXT_PUBLIC_PINNED_X_POST_URL=https://x.com/i/status/2076332062122955242
+NEXT_PUBLIC_PINNED_X_POST_URL=https://x.com/munchonft/status/2076633758585765988?s=20
 ```
 
 If `GOOGLE_APPS_SCRIPT_URL` is not present in development, the API returns a demo success response so the UI can be tested. Production requires the Apps Script URL.
 
 For Vercel, set `NEXT_PUBLIC_SITE_URL` to the active production URL. The current production domain is `https://www.munchosapp.xyz`.
 
-The project X account is `@munchonft`. The pinned post embed points to `https://x.com/i/status/2076332062122955242`.
+The project X account is `@munchonft`. The pinned post task points to `https://x.com/munchonft/status/2076633758585765988?s=20`.
 
 ## X Task Confirmation
 

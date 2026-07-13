@@ -4,13 +4,13 @@ export const siteConfig = {
   xUrl: "https://x.com/munchonft",
   pinnedPostUrl:
     process.env.NEXT_PUBLIC_PINNED_X_POST_URL ??
-    "https://x.com/i/status/2076332062122955242",
+    "https://x.com/munchonft/status/2076633758585765988?s=20",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.munchosapp.xyz",
   chain: "Robinhood Chain",
   supportEmail: "munchonfts@gmail.com"
 } as const;
 
-export const pinnedPostId = "2076332062122955242";
+export const pinnedPostId = "2076633758585765988";
 
 export const whitelistTaskActions = [
   {

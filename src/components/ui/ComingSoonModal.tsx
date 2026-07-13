@@ -11,6 +11,7 @@ type ComingSoonModalProps = {
   description: string;
   open: boolean;
   onClose: () => void;
+  actionLabel?: string;
   children?: ReactNode;
 };
 
@@ -19,6 +20,7 @@ export function ComingSoonModal({
   description,
   open,
   onClose,
+  actionLabel = "Close",
   children
 }: ComingSoonModalProps) {
   return (
@@ -56,7 +58,7 @@ export function ComingSoonModal({
             <p className="mt-3 text-sm leading-7 text-white/64">{description}</p>
             {children ? <div className="mt-5">{children}</div> : null}
             <Button className="mt-6 w-full" type="button" onClick={onClose}>
-              Back to Waitlist
+              {actionLabel}
             </Button>
           </motion.div>
         </motion.div>

@@ -1,6 +1,5 @@
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
-import { LinkButton } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
@@ -24,10 +23,6 @@ export function WaitlistSection() {
             Open the dedicated waitlist page to complete the X tasks, submit your wallet, and
             receive your referral link.
           </p>
-          <LinkButton className="mt-6" href="/waitlist" size="lg">
-            Join Waitlist
-            <ArrowRight aria-hidden="true" size={18} />
-          </LinkButton>
         </GlassCard>
       </div>
     </section>

@@ -7,6 +7,21 @@ const faqs = [
       "The product language, roadmap, data model, and future feature surfaces are planned around Robinhood Chain smart contracts, wallet sessions, NFT ownership, fusion state, and reward activity."
   },
   {
+    question: "What does Chain Access mean?",
+    answer:
+      "Chain Access is the future wallet connection layer. It will let users connect an EVM wallet, read Robinhood Chain activity, and prepare for minting, ownership, rewards, and profile features."
+  },
+  {
+    question: "What does Mint Layer mean?",
+    answer:
+      "Mint Layer is the future NFT creation system for Munchos NFT. It covers allowlist access, mint sessions, smart contract minting, metadata, and the first collection experience."
+  },
+  {
+    question: "What does Evolution Engine mean?",
+    answer:
+      "Evolution Engine is the future upgrade system for NFTs. It is designed for fusion rules, trait changes, rarity upgrades, and on-chain progression after users own Munchos assets."
+  },
+  {
     question: "How does the referral system work?",
     answer:
       "After registration, each member receives a unique MUNCHOS referral code and referral link. Referral totals are stored through the Google Sheets backend."

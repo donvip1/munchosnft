@@ -1,6 +1,7 @@
-const SHEET_NAME = "Whitelist";
+const WHITELIST_SHEET_NAME = "Whitelist";
+const COLLABORATIONS_SHEET_NAME = "Collaborations";
 const DEFAULT_SITE_URL = "https://www.munchosapp.xyz";
-const HEADERS = [
+const WHITELIST_HEADERS = [
   "Timestamp",
   "Full Name",
   "Email",
@@ -13,11 +14,30 @@ const HEADERS = [
   "Task Completed",
   "Submission Status"
 ];
+const COLLABORATION_HEADERS = [
+  "Timestamp",
+  "Application ID",
+  "Collaboration Type",
+  "Project Name",
+  "Contact Name",
+  "Email",
+  "Telegram",
+  "X Username",
+  "Discord",
+  "Website",
+  "Country",
+  "Social Links",
+  "Project Description",
+  "Why Collaborate",
+  "Extra Information",
+  "Logo URL",
+  "Status"
+];
 
 function doGet() {
   return jsonResponse({
     ok: true,
-    message: "Munchos NFT whitelist backend is online."
+    message: "Munchos NFT backend is online."
   });
 }
 
@@ -27,66 +47,12 @@ function doPost(event) {
 
   try {
     const payload = parsePayload(event);
-    const validation = validatePayload(payload);
 
-    if (!validation.ok) {
-      return jsonResponse(validation);
+    if (payload.formType === "collaboration") {
+      return handleCollaborationPost(payload);
     }
 
-    const sheet = getWhitelistSheet();
-    const headers = ensureHeaders(sheet);
-    const rows = sheet.getDataRange().getValues();
-    const existing = findExisting(rows, headers, payload);
-
-    if (existing) {
-      return jsonResponse({
-        ok: true,
-        status: "duplicate",
-        message: "This wallet, email, or X username is already registered.",
-        referralCode: existing.referralCode,
-        referralLink: buildReferralLink(existing.referralCode),
-        referralCount: existing.referralCount,
-        whitelistPosition: null,
-        rewardTier: null
-      });
-    }
-
-    const referralCode = generateReferralCode(rows, headers);
-    const referredBy = normalizeReferral(payload.referredBy || payload.referralCode);
-    const referralCount = 0;
-    const now = new Date();
-    const values = {
-      "Timestamp": now,
-      "Full Name": payload.fullName.trim(),
-      "Email": normalizeEmail(payload.email),
-      "X Username": normalizeXUsername(payload.xUsername),
-      "X Post Link": normalizeUrl(payload.xPostUrl),
-      "Wallet Address": normalizeWallet(payload.walletAddress),
-      "Referral Code": referralCode,
-      "Referred By": referredBy,
-      "Referral Count": referralCount,
-      "Task Completed": Boolean(payload.taskCompleted),
-      "Submission Status": "Registered"
-    };
-
-    sheet.appendRow(headers.map(function (header) {
-      return Object.prototype.hasOwnProperty.call(values, header) ? values[header] : "";
-    }));
-
-    if (referredBy) {
-      incrementReferralCount(sheet, referredBy, headers);
-    }
-
-    return jsonResponse({
-      ok: true,
-      status: "registered",
-      message: "Your whitelist registration has been received successfully.",
-      referralCode: referralCode,
-      referralLink: buildReferralLink(referralCode),
-      referralCount: referralCount,
-      whitelistPosition: null,
-      rewardTier: null
-    });
+    return handleWhitelistPost(payload);
   } catch (error) {
     return jsonResponse({
       ok: false,
@@ -97,6 +63,125 @@ function doPost(event) {
   }
 }
 
+function handleWhitelistPost(payload) {
+  const validation = validateWhitelistPayload(payload);
+
+  if (!validation.ok) {
+    return jsonResponse(validation);
+  }
+
+  const sheet = getWhitelistSheet();
+  const headers = ensureHeaders(sheet, WHITELIST_HEADERS);
+  const rows = sheet.getDataRange().getValues();
+  const existing = findExisting(rows, headers, payload);
+
+  if (existing) {
+    return jsonResponse({
+      ok: true,
+      status: "duplicate",
+      message: "This wallet, email, or X username is already registered.",
+      referralCode: existing.referralCode,
+      referralLink: buildReferralLink(existing.referralCode),
+      referralCount: existing.referralCount,
+      whitelistPosition: null,
+      rewardTier: null
+    });
+  }
+
+  const referralCode = generateReferralCode(rows, headers);
+  const referredBy = normalizeReferral(payload.referredBy || payload.referralCode);
+  const referralCount = 0;
+  const now = new Date();
+  const values = {
+    "Timestamp": now,
+    "Full Name": payload.fullName.trim(),
+    "Email": normalizeEmail(payload.email),
+    "X Username": normalizeXUsername(payload.xUsername),
+    "X Post Link": normalizeUrl(payload.xPostUrl),
+    "Wallet Address": normalizeWallet(payload.walletAddress),
+    "Referral Code": referralCode,
+    "Referred By": referredBy,
+    "Referral Count": referralCount,
+    "Task Completed": Boolean(payload.taskCompleted),
+    "Submission Status": "Registered"
+  };
+
+  sheet.appendRow(headers.map(function (header) {
+    return Object.prototype.hasOwnProperty.call(values, header) ? values[header] : "";
+  }));
+
+  if (referredBy) {
+    incrementReferralCount(sheet, referredBy, headers);
+  }
+
+  return jsonResponse({
+    ok: true,
+    status: "registered",
+    message: "Your whitelist registration has been received successfully.",
+    referralCode: referralCode,
+    referralLink: buildReferralLink(referralCode),
+    referralCount: referralCount,
+    whitelistPosition: null,
+    rewardTier: null
+  });
+}
+
+function handleCollaborationPost(payload) {
+  const validation = validateCollaborationPayload(payload);
+
+  if (!validation.ok) {
+    return jsonResponse(validation);
+  }
+
+  const sheet = getCollaborationsSheet();
+  const headers = ensureHeaders(sheet, COLLABORATION_HEADERS);
+  const rows = sheet.getDataRange().getValues();
+  const existing = findExistingCollaboration(rows, headers, payload);
+
+  if (existing) {
+    return jsonResponse({
+      ok: false,
+      status: "duplicate",
+      message: "A collaboration request for this email and project name already exists.",
+      applicationId: existing.applicationId
+    });
+  }
+
+  const applicationId = generateCollaborationId(rows);
+  const logoUrl = payload.logo ? saveCollaborationLogo(applicationId, payload.logo) : "";
+  const now = new Date();
+  const values = {
+    "Timestamp": now,
+    "Application ID": applicationId,
+    "Collaboration Type": (payload.collaborationTypes || []).join(", "),
+    "Project Name": String(payload.projectName || "").trim(),
+    "Contact Name": String(payload.contactName || "").trim(),
+    "Email": normalizeEmail(payload.email),
+    "Telegram": String(payload.telegram || "").trim(),
+    "X Username": normalizeXUsername(payload.xUsername),
+    "Discord": String(payload.discord || "").trim(),
+    "Website": normalizeUrl(payload.website),
+    "Country": String(payload.country || "").trim(),
+    "Social Links": JSON.stringify(payload.socialLinks || []),
+    "Project Description": String(payload.projectDescription || "").trim(),
+    "Why Collaborate": String(payload.whyCollaborate || "").trim(),
+    "Extra Information": String(payload.extraInfo || "").trim(),
+    "Logo URL": logoUrl,
+    "Status": "Pending"
+  };
+
+  sheet.appendRow(headers.map(function (header) {
+    return Object.prototype.hasOwnProperty.call(values, header) ? values[header] : "";
+  }));
+
+  return jsonResponse({
+    ok: true,
+    status: "submitted",
+    message: "Collaboration request submitted.",
+    applicationId: applicationId
+  });
+}
+
 function parsePayload(event) {
   if (!event || !event.postData || !event.postData.contents) {
     throw new Error("Missing request body.");
@@ -105,7 +190,7 @@ function parsePayload(event) {
   return JSON.parse(event.postData.contents);
 }
 
-function validatePayload(payload) {
+function validateWhitelistPayload(payload) {
   if (
     !payload.fullName ||
     !payload.email ||
@@ -131,19 +216,105 @@ function validatePayload(payload) {
   return { ok: true };
 }
 
-function getWhitelistSheet() {
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = spreadsheet.getSheetByName(SHEET_NAME);
+function validateCollaborationPayload(payload) {
+  const fieldErrors = {};
 
-  if (!sheet) {
-    sheet = spreadsheet.insertSheet(SHEET_NAME);
+  if (!payload.projectName) {
+    fieldErrors.projectName = "Project or brand name is required.";
   }
 
-  ensureHeaders(sheet);
+  if (!payload.contactName) {
+    fieldErrors.contactName = "Contact name is required.";
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(payload.email || "").trim())) {
+    fieldErrors.email = "Enter a valid email address.";
+  }
+
+  if (!payload.telegram) {
+    fieldErrors.telegram = "Telegram username is required.";
+  }
+
+  if (!payload.xUsername) {
+    fieldErrors.xUsername = "X username is required.";
+  }
+
+  if (!payload.country) {
+    fieldErrors.country = "Country is required.";
+  }
+
+  if (!/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(String(payload.website || "").trim())) {
+    fieldErrors.website = "Enter a valid website URL.";
+  }
+
+  if (!payload.collaborationTypes || !payload.collaborationTypes.length) {
+    fieldErrors.collaborationTypes = "Select at least one collaboration type.";
+  }
+
+  if (String(payload.projectDescription || "").trim().length < 150) {
+    fieldErrors.projectDescription = "Project description must be at least 150 characters.";
+  }
+
+  if (String(payload.whyCollaborate || "").trim().length < 100) {
+    fieldErrors.whyCollaborate = "Collaboration reason must be at least 100 characters.";
+  }
+
+  if (payload.logo) {
+    const allowedTypes = ["image/png", "image/svg+xml", "image/jpeg"];
+    if (allowedTypes.indexOf(String(payload.logo.mimeType || "")) === -1) {
+      fieldErrors.logo = "Upload a PNG, SVG, or JPG logo.";
+    }
+
+    if (Number(payload.logo.size || 0) > 5 * 1024 * 1024) {
+      fieldErrors.logo = "Logo must be 5MB or smaller.";
+    }
+
+    if (!payload.logo.base64) {
+      fieldErrors.logo = "Logo upload is missing file data.";
+    }
+  }
+
+  if (!payload.confirmed) {
+    fieldErrors.confirmed = "Confirm that the information is accurate.";
+  }
+
+  if (Object.keys(fieldErrors).length) {
+    return {
+      ok: false,
+      status: "invalid",
+      message: "Please correct the highlighted fields.",
+      fieldErrors: fieldErrors
+    };
+  }
+
+  return { ok: true };
+}
+
+function getWhitelistSheet() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = spreadsheet.getSheetByName(WHITELIST_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(WHITELIST_SHEET_NAME);
+  }
+
+  ensureHeaders(sheet, WHITELIST_HEADERS);
   return sheet;
 }
 
-function ensureHeaders(sheet) {
+function getCollaborationsSheet() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = spreadsheet.getSheetByName(COLLABORATIONS_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(COLLABORATIONS_SHEET_NAME);
+  }
+
+  ensureHeaders(sheet, COLLABORATION_HEADERS);
+  return sheet;
+}
+
+function ensureHeaders(sheet, expectedHeaders) {
   const lastColumn = Math.max(sheet.getLastColumn(), 1);
   const firstRow = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
   const hasHeaders = firstRow.some(function (value) {
@@ -151,16 +322,16 @@ function ensureHeaders(sheet) {
   });
 
   if (!hasHeaders) {
-    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    sheet.getRange(1, 1, 1, expectedHeaders.length).setValues([expectedHeaders]);
     sheet.setFrozenRows(1);
-    return HEADERS.slice();
+    return expectedHeaders.slice();
   }
 
   let headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(function (header) {
     return String(header || "").trim();
   });
 
-  HEADERS.forEach(function (header) {
+  expectedHeaders.forEach(function (header) {
     if (headers.indexOf(header) === -1) {
       sheet.getRange(1, sheet.getLastColumn() + 1).setValue(header);
       headers.push(header);
@@ -202,6 +373,25 @@ function findExisting(rows, headers, payload) {
   return null;
 }
 
+function findExistingCollaboration(rows, headers, payload) {
+  const email = normalizeEmail(payload.email);
+  const projectName = normalizeComparable(payload.projectName);
+
+  for (let index = 1; index < rows.length; index += 1) {
+    const row = rows[index];
+    const rowEmail = normalizeEmail(getCell(row, headers, "Email"));
+    const rowProjectName = normalizeComparable(getCell(row, headers, "Project Name"));
+
+    if (rowEmail === email && rowProjectName === projectName) {
+      return {
+        applicationId: getCell(row, headers, "Application ID")
+      };
+    }
+  }
+
+  return null;
+}
+
 function incrementReferralCount(sheet, referredBy, headers) {
   const rows = sheet.getDataRange().getValues();
   const codeColumnIndex = headerIndex(headers, "Referral Code");
@@ -236,6 +426,26 @@ function generateReferralCode(rows, headers) {
   return code;
 }
 
+function generateCollaborationId(rows) {
+  const nextNumber = Math.max(rows.length, 1);
+  return "MUNCH-COLLAB-" + String(nextNumber).padStart(5, "0");
+}
+
+function saveCollaborationLogo(applicationId, logo) {
+  const safeName = String(logo.fileName || "project-logo").replace(/[^\w.\-]/g, "_");
+  const bytes = Utilities.base64Decode(String(logo.base64 || ""));
+  const blob = Utilities.newBlob(bytes, logo.mimeType, applicationId + "-" + safeName);
+  const file = DriveApp.createFile(blob);
+
+  try {
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (error) {
+    // Some workspace policies disallow public file sharing. Keep the private URL in that case.
+  }
+
+  return file.getUrl();
+}
+
 function randomToken(length) {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let value = "";
@@ -256,6 +466,10 @@ function normalizeXUsername(value) {
 }
 
 function normalizeWallet(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function normalizeComparable(value) {
   return String(value || "").trim().toLowerCase();
 }
 

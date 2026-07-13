@@ -46,6 +46,32 @@ The app does not claim to verify X actions through the API. Instead, it asks use
 
 After the first `Verify Tasks` action, the app shows a confirmation modal. The second `Verify Again` action completes the guided confirmation and submits the whitelist entry to Google Sheets.
 
+## Collaboration Requests
+
+The collaboration portal lives at `/collab` and submits through `/api/collab` using the same `GOOGLE_APPS_SCRIPT_URL` backend as the whitelist. Collaboration submissions are routed by `formType: "collaboration"` and stored in a separate Google Sheet named `Collaborations`.
+
+Expected `Collaborations` columns:
+
+- Timestamp
+- Application ID
+- Collaboration Type
+- Project Name
+- Contact Name
+- Email
+- Telegram
+- X Username
+- Discord
+- Website
+- Country
+- Social Links
+- Project Description
+- Why Collaborate
+- Extra Information
+- Logo URL
+- Status
+
+Logo uploads accept PNG, SVG, or JPG files up to 5MB. The Apps Script stores uploaded logos in Google Drive and writes the file URL into the sheet when Drive permissions allow it.
+
 ## Google Sheets Backend
 
 1. Create a Google Sheet.

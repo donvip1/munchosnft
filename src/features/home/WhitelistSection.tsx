@@ -1,4 +1,4 @@
-import { ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 
 import { LinkButton } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -24,9 +24,13 @@ export function WhitelistSection() {
             Open the dedicated whitelist page to complete the X tasks, submit your wallet, and
             receive your referral link.
           </p>
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex flex-col items-center justify-center gap-3">
             <LinkButton href="/whitelist" size="lg">
               Join Whitelist
+            </LinkButton>
+            <LinkButton href="/collab" size="lg">
+              COLLAB — APPLY NOW
+              <ArrowRight aria-hidden="true" size={18} />
             </LinkButton>
           </div>
         </GlassCard>

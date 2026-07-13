@@ -54,7 +54,7 @@ export function validateCollabPayload(payload: CollabPayload) {
     fieldErrors.country = "Country is required.";
   }
 
-  if (!urlPattern.test(payload.website.trim())) {
+  if (payload.website.trim() && !urlPattern.test(payload.website.trim())) {
     fieldErrors.website = "Enter a valid website URL including https://.";
   }
 

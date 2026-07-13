@@ -243,7 +243,8 @@ function validateCollaborationPayload(payload) {
     fieldErrors.country = "Country is required.";
   }
 
-  if (!/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(String(payload.website || "").trim())) {
+  const website = String(payload.website || "").trim();
+  if (website && !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(website)) {
     fieldErrors.website = "Enter a valid website URL.";
   }
 

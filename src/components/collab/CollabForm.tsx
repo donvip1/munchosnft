@@ -296,7 +296,7 @@ export function CollabForm() {
                   required
                 />
                 <CollabField
-                  label="Discord Username"
+                  label="Discord Username (Optional)"
                   value={form.discord ?? ""}
                   onChange={(value) => updateField("discord", value)}
                   placeholder="Optional"
@@ -310,13 +310,12 @@ export function CollabForm() {
                   required
                 />
                 <CollabField
-                  label="Website"
+                  label="Website (Optional)"
                   value={form.website}
                   error={fieldErrors.website}
                   onChange={(value) => updateField("website", value)}
                   placeholder="https://"
                   icon={<Globe2 aria-hidden="true" size={17} />}
-                  required
                 />
               </div>
             </div>

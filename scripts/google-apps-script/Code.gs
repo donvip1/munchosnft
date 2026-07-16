@@ -1,6 +1,8 @@
 const WHITELIST_SHEET_NAME = "Whitelist";
 const COLLABORATIONS_SHEET_NAME = "Collaborations";
 const DEFAULT_SITE_URL = "https://www.munchosapp.xyz";
+// 21:00 on 16 July 2026 in Africa/Lagos (WAT), represented in UTC.
+const WHITELIST_CUTOFF_AT = "2026-07-16T20:00:00.000Z";
 const WHITELIST_HEADERS = [
   "Timestamp",
   "Full Name",
@@ -64,6 +66,13 @@ function doPost(event) {
 }
 
 function handleWhitelistPost(payload) {
+  if (new Date().getTime() >= Date.parse(WHITELIST_CUTOFF_AT)) {
+    return jsonResponse({
+      ok: false,
+      message: "Whitelist form closed."
+    });
+  }
+
   const validation = validateWhitelistPayload(payload);
 
   if (!validation.ok) {

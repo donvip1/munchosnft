@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 
+import { isWhitelistClosed } from "@/config/whitelist";
 import { buildReferralLink, generateReferralCode } from "@/lib/referral";
 import { postToGoogleAppsScript } from "@/lib/whitelist-api";
 import { sanitizeWhitelistPayload, validateWhitelistPayload } from "@/lib/validation";
 import type { WhitelistPayload, WhitelistResponse } from "@/types/whitelist";
 
 export async function POST(request: Request) {
+  if (isWhitelistClosed()) {
+    return NextResponse.json<WhitelistResponse>(
+      { ok: false, message: "Whitelist form closed." },
+      { status: 403 }
+    );
+  }
+
   let payload: WhitelistPayload;
 
   try {

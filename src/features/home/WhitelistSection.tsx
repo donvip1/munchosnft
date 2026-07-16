@@ -1,10 +1,29 @@
+"use client";
+
 import { ArrowRight, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { LinkButton } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { isWhitelistClosed, WHITELIST_CUTOFF_AT } from "@/config/whitelist";
+import { WhitelistClosed } from "@/features/whitelist/components/WhitelistClosed";
 
 export function WhitelistSection() {
+  const [closed, setClosed] = useState(() => isWhitelistClosed());
+
+  useEffect(() => {
+    const remaining = Date.parse(WHITELIST_CUTOFF_AT) - Date.now();
+
+    if (remaining <= 0) {
+      setClosed(true);
+      return;
+    }
+
+    const timer = window.setTimeout(() => setClosed(true), remaining);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <section id="whitelist" className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
@@ -13,6 +32,11 @@ export function WhitelistSection() {
           identity, referrals, and launch momentum.
         </SectionHeading>
 
+        {closed ? (
+          <div className="mt-10">
+            <WhitelistClosed />
+          </div>
+        ) : (
         <GlassCard className="mt-10 p-5 text-center sm:p-8">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-lemon/35 bg-lemon/10 text-lemon shadow-lemon">
             <ShieldCheck aria-hidden="true" size={25} />
@@ -34,6 +58,7 @@ export function WhitelistSection() {
             </LinkButton>
           </div>
         </GlassCard>
+        )}
       </div>
     </section>
   );

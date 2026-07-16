@@ -4,16 +4,18 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, ExternalLink, Loader2, ShieldCheck, Twitter, WalletCards } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, ReactNode, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { siteConfig, whitelistTaskActions } from "@/config/site";
+import { isWhitelistClosed, WHITELIST_CUTOFF_AT } from "@/config/whitelist";
 import { validateWhitelistPayload } from "@/lib/validation";
 import { submitWhitelist } from "@/lib/whitelist-api";
 import type { WhitelistFailure, WhitelistPayload, WhitelistSuccess as WhitelistSuccessType } from "@/types/whitelist";
 
+import { WhitelistClosed } from "./WhitelistClosed";
 import { WhitelistSuccess } from "./WhitelistSuccess";
 
 const initialState: WhitelistPayload = {
@@ -56,8 +58,21 @@ export function WhitelistCard() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState<WhitelistSuccessType | null>(null);
+  const [isClosed, setIsClosed] = useState(() => isWhitelistClosed());
   const isLoading =
     verificationStage === "first-loading" || verificationStage === "second-loading" || isSubmitting;
+
+  useEffect(() => {
+    const remaining = Date.parse(WHITELIST_CUTOFF_AT) - Date.now();
+
+    if (remaining <= 0) {
+      setIsClosed(true);
+      return;
+    }
+
+    const timer = window.setTimeout(() => setIsClosed(true), remaining);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   function updateField<K extends keyof WhitelistPayload>(field: K, value: WhitelistPayload[K]) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -115,7 +130,8 @@ export function WhitelistCard() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (isLoading) {
+    if (isLoading || isClosed || isWhitelistClosed()) {
+      setIsClosed(true);
       return;
     }
 
@@ -129,6 +145,12 @@ export function WhitelistCard() {
   }
 
   async function handleVerifyAgain() {
+    if (isClosed || isWhitelistClosed()) {
+      setIsClosed(true);
+      setVerificationStage("idle");
+      return;
+    }
+
     setVerificationStage("second-loading");
     setStatusMessage("");
     await runLoading(finalVerificationMessages, 3500);
@@ -149,6 +171,10 @@ export function WhitelistCard() {
 
   if (success) {
     return <WhitelistSuccess result={success} />;
+  }
+
+  if (isClosed) {
+    return <WhitelistClosed />;
   }
 
   return (

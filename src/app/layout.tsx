@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import "@/app/globals.css";
 
+import { Web3Provider } from "@/components/web3/Web3Provider";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
@@ -61,7 +62,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Web3Provider>{children}</Web3Provider>
+      </body>
     </html>
   );
 }

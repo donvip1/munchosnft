@@ -18,6 +18,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
 import { ComingSoonModal } from "@/components/ui/ComingSoonModal";
@@ -108,24 +109,42 @@ export function FutureModulesMenu() {
             <ul className="mx-auto max-h-[min(calc(100dvh-4rem),28rem)] w-full max-w-7xl overflow-y-auto px-4 py-2 sm:max-h-[min(calc(100dvh-5rem),30rem)] sm:px-6 lg:px-8">
               {futureFeatures.map((feature) => {
                 const Icon = iconMap[feature.icon] ?? Sparkles;
+                const content = (
+                  <>
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center text-lemon transition group-hover:text-lemon-soft">
+                      <Icon aria-hidden="true" size={17} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block break-words font-pixel text-sm leading-5 text-white sm:text-base">
+                        {feature.title}
+                      </span>
+                    </span>
+                  </>
+                );
+                const itemClassName =
+                  "group flex min-h-11 w-full items-center gap-3 py-2.5 text-left transition duration-200 hover:bg-white/[0.045] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lemon sm:min-h-12";
 
                 return (
                   <li className="border-b border-white/[0.08] last:border-b-0" key={feature.title}>
-                    <button
-                      className="group flex min-h-11 w-full items-center gap-3 py-2.5 text-left transition duration-200 hover:bg-white/[0.045] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lemon sm:min-h-12"
-                      role="menuitem"
-                      type="button"
-                      onClick={openComingSoon}
-                    >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center text-lemon transition group-hover:text-lemon-soft">
-                        <Icon aria-hidden="true" size={17} />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block break-words font-pixel text-sm leading-5 text-white sm:text-base">
-                          {feature.title}
-                        </span>
-                      </span>
-                    </button>
+                    {"href" in feature ? (
+                      <Link
+                        className={itemClassName}
+                        href={feature.href}
+                        role="menuitem"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        {content}
+                      </Link>
+                    ) : (
+                      <button
+                        className={itemClassName}
+                        role="menuitem"
+                        type="button"
+                        onClick={openComingSoon}
+                      >
+                        {content}
+                      </button>
+                    )}
                   </li>
                 );
               })}

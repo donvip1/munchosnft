@@ -12,11 +12,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.101.2",
     "framer-motion": "^12.23.6",
     "lucide-react": "^0.468.0",
     "next": "^15.3.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "viem": "^2.55.2",
+    "wagmi": "^3.7.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

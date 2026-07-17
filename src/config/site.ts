@@ -49,7 +49,8 @@ export const futureFeatures = [
   {
     title: "NFT Mint",
     description: "Genesis access, allowlist minting, and chain-native mint sessions.",
-    icon: "Sparkles"
+    icon: "Sparkles",
+    href: "/#mint"
   },
   {
     title: "NFT Fusion",

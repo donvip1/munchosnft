@@ -2,20 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Wallet } from "lucide-react";
-import { useState } from "react";
 
 import { FutureModulesMenu } from "@/components/layout/FutureModulesMenu";
-import { Button } from "@/components/ui/Button";
-import { ComingSoonModal } from "@/components/ui/ComingSoonModal";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { WalletButton } from "@/components/web3/WalletButton";
 
 export function SiteHeader() {
-  const [walletModalOpen, setWalletModalOpen] = useState(false);
-
   return (
-    <>
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-white/8 bg-ink/72 backdrop-blur-2xl">
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-white/8 bg-ink/72 backdrop-blur-2xl">
         <nav
           className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8"
           aria-label="Main navigation"
@@ -39,26 +33,10 @@ export function SiteHeader() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              className="h-9 px-2 text-[10px] sm:px-3 sm:text-xs"
-              size="sm"
-              type="button"
-              onClick={() => setWalletModalOpen(true)}
-            >
-              <Wallet aria-hidden="true" size={15} />
-              Connect Wallet
-            </Button>
+            <WalletButton />
             <FutureModulesMenu />
           </div>
         </nav>
-      </header>
-
-      <ComingSoonModal
-        title="Feature Coming Soon"
-        description="Wallet sessions will launch with Robinhood Chain access, portfolio state, owned NFTs, rewards, and future minting flows."
-        open={walletModalOpen}
-        onClose={() => setWalletModalOpen(false)}
-      />
-    </>
+    </header>
   );
 }

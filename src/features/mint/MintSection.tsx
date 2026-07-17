@@ -147,7 +147,7 @@ export function MintSection() {
   else if (alreadyMinted) actionLabel = "Already Minted";
   else if (phase === 1) actionLabel = "GTD Proof Required";
   else if (phase === 2 && proofLoading) actionLabel = "Checking Whitelist";
-  else if (phase === 2 && !proofData?.eligible) actionLabel = "Not Whitelisted";
+  else if (phase === 2 && !proofData?.eligible) actionLabel = "Not Eligible";
   else if (phase === 2 && !proofRootActive) actionLabel = "Whitelist Root Pending";
   else if (phase === 2) actionLabel = "Mint Whitelist";
   else if (phase === 3) actionLabel = "Mint Public";

@@ -4,7 +4,6 @@ import { CheckCircle2, ExternalLink, LoaderCircle, RefreshCw, ShieldCheck, Walle
 import { useEffect, useMemo, useState } from "react";
 import { formatEther, type Hex } from "viem";
 import {
-  useConnect,
   useConnection,
   useReadContract,
   useReadContracts,
@@ -17,6 +16,7 @@ import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { useWalletConnection } from "@/components/web3/WalletConnectionProvider";
 import {
   genesisAbi,
   genesisContractAddress,
@@ -45,7 +45,7 @@ function errorMessage(error: unknown) {
 
 export function MintSection() {
   const connection = useConnection();
-  const { connectors, mutate: connect, isPending: isConnecting } = useConnect();
+  const { openWalletModal, isConnecting } = useWalletConnection();
   const { mutateAsync: switchChain, isPending: isSwitching } = useSwitchChain();
   const { mutateAsync: writeContract, isPending: isWriting, error: writeError } = useWriteContract();
   const [proofData, setProofData] = useState<ProofResponse | null>(null);
@@ -166,8 +166,7 @@ export function MintSection() {
 
     try {
       if (!connection.isConnected) {
-        if (!connectors[0]) throw new Error("No browser wallet was detected.");
-        connect({ connector: connectors[0] });
+        openWalletModal();
         return;
       }
       if (wrongChain) {

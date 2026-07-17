@@ -1,9 +1,10 @@
 "use client";
 
 import { LogOut, Wallet } from "lucide-react";
-import { useConnect, useConnection, useDisconnect } from "wagmi";
+import { useConnection, useDisconnect } from "wagmi";
 
 import { Button } from "@/components/ui/Button";
+import { useWalletConnection } from "@/components/web3/WalletConnectionProvider";
 
 function shortAddress(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -11,8 +12,8 @@ function shortAddress(address: string) {
 
 export function WalletButton() {
   const connection = useConnection();
-  const { connectors, mutate: connect, isPending } = useConnect();
   const { mutate: disconnect } = useDisconnect();
+  const { openWalletModal, isConnecting } = useWalletConnection();
 
   if (connection.isConnected && connection.address) {
     return (
@@ -34,13 +35,13 @@ export function WalletButton() {
   return (
     <Button
       className="h-9 px-2 text-[10px] sm:px-3 sm:text-xs"
-      disabled={isPending || connectors.length === 0}
+      disabled={isConnecting}
       size="sm"
       type="button"
-      onClick={() => connectors[0] && connect({ connector: connectors[0] })}
+      onClick={openWalletModal}
     >
       <Wallet aria-hidden="true" size={15} />
-      {isPending ? "Connecting" : "Connect Wallet"}
+      {isConnecting ? "Connecting" : "Connect Wallet"}
     </Button>
   );
 }

@@ -60,15 +60,13 @@ export const futureFeatures = [
   },
   {
     title: "NFT Mint",
-    description: "Mint one of three Genesis artworks in the public Robinhood Chain testnet.",
-    icon: "Sparkles",
-    href: "/testnet-mint"
+    description: "Genesis testnet minting opens after the official announcement.",
+    icon: "Sparkles"
   },
   {
     title: "NFT Fusion",
-    description: "Fuse Genesis with one catalyst for OG or both catalysts for Legendary.",
-    icon: "RefreshCw",
-    href: "/fusion"
+    description: "Catalyst Fusion opens after the official announcement.",
+    icon: "RefreshCw"
   },
   {
     title: "NFT Evolution",

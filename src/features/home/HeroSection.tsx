@@ -3,14 +3,18 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Sparkles } from "lucide-react";
+import { useState } from "react";
 
 import { StatusPill } from "@/components/ui/StatusPill";
-import { LinkButton } from "@/components/ui/Button";
+import { Button, LinkButton } from "@/components/ui/Button";
+import { ComingSoonModal } from "@/components/ui/ComingSoonModal";
 import { siteConfig } from "@/config/site";
 
 export function HeroSection() {
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
+
   return (
-    <section
+    <><section
       id="top"
       className="relative flex min-h-[82svh] items-center overflow-hidden px-4 pb-12 pt-28 sm:px-6 sm:pt-32 lg:px-8"
     >
@@ -49,12 +53,12 @@ export function HeroSection() {
             Collect. Fuse. Evolve.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <LinkButton href="/testnet-mint" size="lg">Mint Testnet Genesis</LinkButton>
-            <LinkButton href="/fusion" size="lg" variant="secondary">Open Fusion Lab</LinkButton>
+            <Button size="lg" type="button" onClick={() => setComingSoonOpen(true)}>Mint Testnet Genesis</Button>
+            <Button size="lg" type="button" variant="secondary" onClick={() => setComingSoonOpen(true)}>Open Fusion Lab</Button>
             <LinkButton href="/eligibility" size="lg" variant="ghost">Check Mainnet Status</LinkButton>
           </div>
         </div>
       </div>
-    </section>
+    </section><ComingSoonModal title="Testnet Coming Soon" open={comingSoonOpen} onClose={() => setComingSoonOpen(false)} /></>
   );
 }

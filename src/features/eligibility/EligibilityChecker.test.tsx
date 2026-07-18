@@ -47,7 +47,7 @@ describe("EligibilityChecker", () => {
   });
 
   it.each([
-    [true, "Mainnet whitelist eligible"],
+    [true, "Mainnet eligible"],
     [false, "Not currently whitelisted"]
   ])("renders the API eligibility result", async (eligible, expected) => {
     mockedConnection.mockReturnValue({

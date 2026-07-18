@@ -103,6 +103,19 @@ export function FusionLab() {
     setStep("loading");
     setError(undefined);
     try {
+      const exists = await publicClient.readContract({
+        abi: genesisAbi,
+        address: genesisContractAddress,
+        functionName: "exists",
+        args: [selectedToken]
+      });
+      if (!exists) {
+        setOwnedTokens((tokens) => tokens.filter((token) => token !== selectedToken));
+        setSelectedToken(undefined);
+        throw new Error(
+          "This Genesis no longer exists. It may already have been fused; refresh your wallet assets and select a live Genesis."
+        );
+      }
       const [owner, isApproved] = await Promise.all([
         publicClient.readContract({ abi: genesisAbi, address: genesisContractAddress, functionName: "ownerOf", args: [selectedToken] }),
         publicClient.readContract({ abi: genesisAbi, address: genesisContractAddress, functionName: "isApprovedForAll", args: [connection.address, catalystFusionContractAddress] })
@@ -141,6 +154,8 @@ export function FusionLab() {
       await publicClient.waitForTransactionReceipt({ hash: nextHash });
       const minted = await publicClient.readContract({ abi: catalystFusionAbi, address: catalystFusionContractAddress, functionName: "totalMinted" });
       setResultId(minted as bigint);
+      setOwnedTokens((tokens) => tokens.filter((token) => token !== selectedToken));
+      setSelectedToken(undefined);
       setStep("complete");
     } catch (cause) {
       setStep("ready");

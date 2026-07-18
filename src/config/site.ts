@@ -47,6 +47,12 @@ export const whitelistTaskActions = [
 
 export const futureFeatures = [
   {
+    title: "Testnet Guide",
+    description: "Follow the public mint, catalyst fusion, and mainnet-priority phases.",
+    icon: "BookOpen",
+    href: "/testnet-guide"
+  },
+  {
     title: "Testnet Eligibility",
     description: "Check mainnet whitelist status and track your open testnet participation.",
     icon: "ShieldCheck",

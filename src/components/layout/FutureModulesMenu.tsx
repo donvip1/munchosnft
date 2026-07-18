@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart3,
+  BookOpen,
   Dna,
   Gem,
   Medal,
@@ -27,6 +28,7 @@ import { futureFeatures } from "@/config/site";
 
 const iconMap: Record<string, LucideIcon> = {
   BarChart3,
+  BookOpen,
   Dna,
   Gem,
   Medal,

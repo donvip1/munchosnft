@@ -38,6 +38,13 @@ export const catalystMetadataBaseUrl = "/api/testnet-catalyst-metadata";
 export const genesisAbi = [
   {
     type: "function",
+    name: "exists",
+    stateMutability: "view",
+    inputs: [{ type: "uint256" }],
+    outputs: [{ type: "bool" }]
+  },
+  {
+    type: "function",
     name: "tokensOfOwner",
     stateMutability: "view",
     inputs: [{ type: "address" }],

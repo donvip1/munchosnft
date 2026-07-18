@@ -48,6 +48,7 @@ export function FusionLab() {
   const { openWalletModal, isConnecting } = useWalletConnection();
   const { mutateAsync: switchChain, isPending: isSwitching } = useSwitchChain();
   const { mutateAsync: writeContract } = useWriteContract();
+  const activeAddress = connection.address ?? connection.addresses?.[0];
   const [ownedTokens, setOwnedTokens] = useState<bigint[]>([]);
   const [selectedToken, setSelectedToken] = useState<bigint>();
   const [catalysts, setCatalysts] = useState<1 | 2>(1);
@@ -58,7 +59,8 @@ export function FusionLab() {
   const [error, setError] = useState<string>();
 
   const configured = isFusionConfigured(catalystFusionContractAddress);
-  const wrongChain = connection.isConnected && connection.chainId !== robinhoodTestnet.id;
+  const walletConnected = Boolean(activeAddress);
+  const wrongChain = walletConnected && connection.chainId !== robinhoodTestnet.id;
   const busy = ["loading", "approving", "fusing"].includes(step);
   const result = catalysts === 1 ? resultArt.og : resultArt.legendary;
   const selectedArt = selectedToken
@@ -70,7 +72,7 @@ export function FusionLab() {
     : undefined;
 
   useEffect(() => {
-    if (!connection.address || !publicClient) {
+    if (!activeAddress || !publicClient) {
       setOwnedTokens([]);
       setSelectedToken(undefined);
       return;
@@ -81,7 +83,7 @@ export function FusionLab() {
         abi: genesisAbi,
         address: genesisContractAddress,
         functionName: "tokensOfOwner",
-        args: [connection.address]
+        args: [activeAddress]
       })
       .then((tokens) => {
         if (active) {
@@ -93,10 +95,10 @@ export function FusionLab() {
     return () => {
       active = false;
     };
-  }, [connection.address, publicClient]);
+  }, [activeAddress, publicClient]);
 
   async function prepare() {
-    if (!connection.address || !connection.isConnected) return openWalletModal();
+    if (!activeAddress) return openWalletModal();
     if (wrongChain) return switchChain({ chainId: robinhoodTestnet.id });
     if (!configured || !publicClient) return setError("Fusion is not configured yet.");
     if (!selectedToken) return setError("Connect a wallet that owns a Genesis NFT.");
@@ -118,9 +120,9 @@ export function FusionLab() {
       }
       const [owner, isApproved] = await Promise.all([
         publicClient.readContract({ abi: genesisAbi, address: genesisContractAddress, functionName: "ownerOf", args: [selectedToken] }),
-        publicClient.readContract({ abi: genesisAbi, address: genesisContractAddress, functionName: "isApprovedForAll", args: [connection.address, catalystFusionContractAddress] })
+        publicClient.readContract({ abi: genesisAbi, address: genesisContractAddress, functionName: "isApprovedForAll", args: [activeAddress, catalystFusionContractAddress] })
       ]);
-      if (!isAddressEqual(owner, connection.address)) throw new Error("This Genesis is not owned by the connected wallet.");
+      if (!isAddressEqual(owner, activeAddress)) throw new Error("This Genesis is not owned by the connected wallet.");
       setApproved(Boolean(isApproved));
       setStep("ready");
     } catch (cause) {
@@ -173,7 +175,7 @@ export function FusionLab() {
         <GlassCard className="rounded-lg p-5 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <StatusPill tone={configured ? "green" : "white"}><FlaskConical aria-hidden="true" size={14} />{configured ? "Fusion Ready" : "Deployment Pending"}</StatusPill>
-            {connection.address ? <span className="font-mono text-xs text-white/45">{connection.address.slice(0, 6)}...{connection.address.slice(-4)}</span> : null}
+            {activeAddress ? <span className="font-mono text-xs text-white/45">{activeAddress.slice(0, 6)}...{activeAddress.slice(-4)}</span> : null}
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -184,7 +186,7 @@ export function FusionLab() {
 
           <div className="mt-7">
             <p className="font-pixel text-sm text-white">Your Genesis NFTs</p>
-            {connection.isConnected ? <div className="mt-3 flex flex-wrap gap-2">{ownedTokens.length ? ownedTokens.map((token) => <button className={`rounded-lg border px-4 py-3 font-mono text-sm ${selectedToken === token ? "border-lemon bg-lemon/10 text-lemon" : "border-white/10 text-white/70"}`} disabled={busy || step === "complete"} key={token.toString()} type="button" onClick={() => { setSelectedToken(token); setStep("idle"); setApproved(false); }}>{`#${token}`}</button>) : <p className="text-sm text-white/55">No live Genesis NFTs found in this wallet.</p>}</div> : <p className="mt-3 text-sm text-white/55">Connect a wallet to load owned Genesis NFTs.</p>}
+            {walletConnected ? <div className="mt-3 flex flex-wrap gap-2">{ownedTokens.length ? ownedTokens.map((token) => <button className={`rounded-lg border px-4 py-3 font-mono text-sm ${selectedToken === token ? "border-lemon bg-lemon/10 text-lemon" : "border-white/10 text-white/70"}`} disabled={busy || step === "complete"} key={token.toString()} type="button" onClick={() => { setSelectedToken(token); setStep("idle"); setApproved(false); }}>{`#${token}`}</button>) : <p className="text-sm text-white/55">No live Genesis NFTs found in this wallet.</p>}</div> : <p className="mt-3 text-sm text-white/55">Connect a wallet to load owned Genesis NFTs.</p>}
           </div>
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2">
@@ -198,7 +200,7 @@ export function FusionLab() {
 
           {step === "complete" ? <div className="mt-7 border-y border-white/10 py-7 text-center"><CheckCircle2 aria-hidden="true" className="mx-auto text-lemon" size={40} /><h2 className="mt-3 font-pixel text-xl text-white">{result.name} minted</h2>{resultUrl ? <a className="mt-3 inline-flex items-center gap-2 text-sm text-lemon hover:underline" href={resultUrl} rel="noreferrer" target="_blank">View metadata <ExternalLink aria-hidden="true" size={14} /></a> : null}</div> : null}
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">{step === "approving" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Confirming Approval</Button> : step === "fusing" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Fusing</Button> : step === "ready" && !approved ? <Button className="w-full" onClick={approve} size="lg"><ShieldCheck size={18} />Approve Fusion</Button> : step === "ready" ? <Button className="w-full" onClick={fuse} size="lg"><FlaskConical size={18} />Mint {result.name}</Button> : <Button className="w-full" disabled={isConnecting || isSwitching || busy} onClick={prepare} size="lg">{isConnecting || isSwitching ? <LoaderCircle className="animate-spin" size={18} /> : connection.isConnected ? <ShieldCheck size={18} /> : <Wallet size={18} />}{!connection.isConnected ? "Connect Wallet" : wrongChain ? "Switch to Robinhood Testnet" : "Verify Selected Genesis"}</Button>}</div>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">{step === "approving" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Confirming Approval</Button> : step === "fusing" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Fusing</Button> : step === "ready" && !approved ? <Button className="w-full" onClick={approve} size="lg"><ShieldCheck size={18} />Approve Fusion</Button> : step === "ready" ? <Button className="w-full" onClick={fuse} size="lg"><FlaskConical size={18} />Mint {result.name}</Button> : <Button className="w-full" disabled={isConnecting || isSwitching || busy} onClick={prepare} size="lg">{isConnecting || isSwitching ? <LoaderCircle className="animate-spin" size={18} /> : walletConnected ? <ShieldCheck size={18} /> : <Wallet size={18} />}{!walletConnected ? "Connect Wallet" : wrongChain ? "Switch to Robinhood Testnet" : "Verify Selected Genesis"}</Button>}</div>
           {explorerUrl ? <a className="mt-4 inline-flex items-center gap-2 text-xs text-white/55 hover:text-lemon" href={explorerUrl} rel="noreferrer" target="_blank">View transaction <ExternalLink size={14} /></a> : null}
           {error ? <p className="mt-4 text-sm text-red-300">{error}</p> : null}
         </GlassCard>

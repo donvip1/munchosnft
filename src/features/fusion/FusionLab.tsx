@@ -50,6 +50,7 @@ export function FusionLab() {
   const { mutateAsync: writeContract } = useWriteContract();
   const activeAddress = connection.address ?? connection.addresses?.[0];
   const [ownedTokens, setOwnedTokens] = useState<bigint[]>([]);
+  const [evolved, setEvolved] = useState({ og: 0n, legendary: 0n });
   const [selectedToken, setSelectedToken] = useState<bigint>();
   const [catalysts, setCatalysts] = useState<1 | 2>(1);
   const [step, setStep] = useState<Step>("idle");
@@ -75,23 +76,33 @@ export function FusionLab() {
     if (!activeAddress || !publicClient) {
       setOwnedTokens([]);
       setSelectedToken(undefined);
+      setEvolved({ og: 0n, legendary: 0n });
       return;
     }
     let active = true;
-    void publicClient
-      .readContract({
+    void Promise.all([
+      publicClient.readContract({
         abi: genesisAbi,
         address: genesisContractAddress,
         functionName: "tokensOfOwner",
         args: [activeAddress]
-      })
-      .then((tokens) => {
+      }),
+      publicClient.readContract({ abi: catalystFusionAbi, address: catalystFusionContractAddress, functionName: "ogBalanceOf", args: [activeAddress] }),
+      publicClient.readContract({ abi: catalystFusionAbi, address: catalystFusionContractAddress, functionName: "legendaryBalanceOf", args: [activeAddress] })
+    ])
+      .then(([tokens, og, legendary]) => {
         if (active) {
           setOwnedTokens(tokens as bigint[]);
           setSelectedToken((current) => current ?? (tokens as bigint[])[0]);
+          setEvolved({ og: og as bigint, legendary: legendary as bigint });
         }
       })
-      .catch(() => active && setOwnedTokens([]));
+      .catch(() => {
+        if (active) {
+          setOwnedTokens([]);
+          setEvolved({ og: 0n, legendary: 0n });
+        }
+      });
     return () => {
       active = false;
     };
@@ -101,7 +112,7 @@ export function FusionLab() {
     if (!activeAddress) return openWalletModal();
     if (wrongChain) return switchChain({ chainId: robinhoodTestnet.id });
     if (!configured || !publicClient) return setError("Fusion is not configured yet.");
-    if (!selectedToken) return setError("Connect a wallet that owns a Genesis NFT.");
+    if (!selectedToken) return setError("This wallet has no live Genesis NFT available to fuse.");
     setStep("loading");
     setError(undefined);
     try {
@@ -186,7 +197,7 @@ export function FusionLab() {
 
           <div className="mt-7">
             <p className="font-pixel text-sm text-white">Your Genesis NFTs</p>
-            {walletConnected ? <div className="mt-3 flex flex-wrap gap-2">{ownedTokens.length ? ownedTokens.map((token) => <button className={`rounded-lg border px-4 py-3 font-mono text-sm ${selectedToken === token ? "border-lemon bg-lemon/10 text-lemon" : "border-white/10 text-white/70"}`} disabled={busy || step === "complete"} key={token.toString()} type="button" onClick={() => { setSelectedToken(token); setStep("idle"); setApproved(false); }}>{`#${token}`}</button>) : <p className="text-sm text-white/55">No live Genesis NFTs found in this wallet.</p>}</div> : <p className="mt-3 text-sm text-white/55">Connect a wallet to load owned Genesis NFTs.</p>}
+            {walletConnected ? <div className="mt-3 flex flex-wrap gap-2">{ownedTokens.length ? ownedTokens.map((token) => <button className={`rounded-lg border px-4 py-3 font-mono text-sm ${selectedToken === token ? "border-lemon bg-lemon/10 text-lemon" : "border-white/10 text-white/70"}`} disabled={busy || step === "complete"} key={token.toString()} type="button" onClick={() => { setSelectedToken(token); setStep("idle"); setApproved(false); }}>{`#${token}`}</button>) : evolved.og > 0n || evolved.legendary > 0n ? <p className="text-sm text-lemon">Fusion complete: this wallet holds {evolved.og.toString()} OG and {evolved.legendary.toString()} Legendary NFT.</p> : <div className="flex flex-wrap items-center gap-3"><p className="text-sm text-white/55">No live Genesis NFT found in this wallet.</p><LinkButton href="/testnet-mint" size="sm">Mint Genesis</LinkButton></div>}</div> : <p className="mt-3 text-sm text-white/55">Connect a wallet to load owned Genesis NFTs.</p>}
           </div>
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2">
@@ -200,7 +211,7 @@ export function FusionLab() {
 
           {step === "complete" ? <div className="mt-7 border-y border-white/10 py-7 text-center"><CheckCircle2 aria-hidden="true" className="mx-auto text-lemon" size={40} /><h2 className="mt-3 font-pixel text-xl text-white">{result.name} minted</h2>{resultUrl ? <a className="mt-3 inline-flex items-center gap-2 text-sm text-lemon hover:underline" href={resultUrl} rel="noreferrer" target="_blank">View metadata <ExternalLink aria-hidden="true" size={14} /></a> : null}</div> : null}
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">{step === "approving" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Confirming Approval</Button> : step === "fusing" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Fusing</Button> : step === "ready" && !approved ? <Button className="w-full" onClick={approve} size="lg"><ShieldCheck size={18} />Approve Fusion</Button> : step === "ready" ? <Button className="w-full" onClick={fuse} size="lg"><FlaskConical size={18} />Mint {result.name}</Button> : <Button className="w-full" disabled={isConnecting || isSwitching || busy} onClick={prepare} size="lg">{isConnecting || isSwitching ? <LoaderCircle className="animate-spin" size={18} /> : walletConnected ? <ShieldCheck size={18} /> : <Wallet size={18} />}{!walletConnected ? "Connect Wallet" : wrongChain ? "Switch to Robinhood Testnet" : "Verify Selected Genesis"}</Button>}</div>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">{step === "approving" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Confirming Approval</Button> : step === "fusing" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Fusing</Button> : step === "ready" && !approved ? <Button className="w-full" onClick={approve} size="lg"><ShieldCheck size={18} />Approve Fusion</Button> : step === "ready" ? <Button className="w-full" onClick={fuse} size="lg"><FlaskConical size={18} />Mint {result.name}</Button> : <Button className="w-full" disabled={isConnecting || isSwitching || busy || (walletConnected && !wrongChain && !selectedToken)} onClick={prepare} size="lg">{isConnecting || isSwitching ? <LoaderCircle className="animate-spin" size={18} /> : walletConnected ? <ShieldCheck size={18} /> : <Wallet size={18} />}{!walletConnected ? "Connect Wallet" : wrongChain ? "Switch to Robinhood Testnet" : selectedToken ? "Verify Selected Genesis" : evolved.og > 0n || evolved.legendary > 0n ? "Fusion Complete" : "Mint Genesis First"}</Button>}</div>
           {explorerUrl ? <a className="mt-4 inline-flex items-center gap-2 text-xs text-white/55 hover:text-lemon" href={explorerUrl} rel="noreferrer" target="_blank">View transaction <ExternalLink size={14} /></a> : null}
           {error ? <p className="mt-4 text-sm text-red-300">{error}</p> : null}
         </GlassCard>

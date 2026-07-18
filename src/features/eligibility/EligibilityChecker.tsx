@@ -2,14 +2,20 @@
 
 import { CheckCircle2, LoaderCircle, ShieldCheck, Wallet, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useConnection, useSwitchChain } from "wagmi";
+import { useConnection, usePublicClient, useSwitchChain } from "wagmi";
 
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { useWalletConnection } from "@/components/web3/WalletConnectionProvider";
-import { robinhoodTestnet } from "@/config/web3";
+import {
+  catalystFusionAbi,
+  catalystFusionContractAddress,
+  genesisAbi,
+  genesisContractAddress,
+  robinhoodTestnet
+} from "@/config/web3";
 
 type EligibilityResponse = {
   ok: boolean;
@@ -20,11 +26,13 @@ type EligibilityResponse = {
 
 export function EligibilityChecker() {
   const connection = useConnection();
+  const publicClient = usePublicClient({ chainId: robinhoodTestnet.id });
   const { openWalletModal, isConnecting } = useWalletConnection();
   const { mutateAsync: switchChain, isPending: isSwitching } = useSwitchChain();
   const [result, setResult] = useState<EligibilityResponse | null>(null);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string>();
+  const [participation, setParticipation] = useState({ minted: 0n, og: 0n, legendary: 0n });
 
   const wrongChain = connection.isConnected && connection.chainId !== robinhoodTestnet.id;
 
@@ -55,6 +63,22 @@ export function EligibilityChecker() {
     return () => controller.abort();
   }, [connection.address]);
 
+  useEffect(() => {
+    if (!connection.address || !publicClient) {
+      setParticipation({ minted: 0n, og: 0n, legendary: 0n });
+      return;
+    }
+    let active = true;
+    void Promise.all([
+      publicClient.readContract({ abi: genesisAbi, address: genesisContractAddress, functionName: "numberMinted", args: [connection.address] }),
+      publicClient.readContract({ abi: catalystFusionAbi, address: catalystFusionContractAddress, functionName: "ogBalanceOf", args: [connection.address] }),
+      publicClient.readContract({ abi: catalystFusionAbi, address: catalystFusionContractAddress, functionName: "legendaryBalanceOf", args: [connection.address] })
+    ]).then(([minted, og, legendary]) => {
+      if (active) setParticipation({ minted: minted as bigint, og: og as bigint, legendary: legendary as bigint });
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, [connection.address, publicClient]);
+
   async function handleAction() {
     if (!connection.isConnected) {
       openWalletModal();
@@ -74,9 +98,9 @@ export function EligibilityChecker() {
         : "Wallet Required";
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      <SectionHeading eyebrow="Testnet Access" title="Check Testnet Eligibility">
-        Connect a wallet to check the current Genesis whitelist. Minting is not available from this page.
+    <div className="mx-auto w-full max-w-4xl">
+      <SectionHeading eyebrow="Munchos Access" title="Eligibility and Testnet Progress">
+        Testnet minting is open to all wallets. Existing whitelist and collab status remains separate from earned mainnet priority.
       </SectionHeading>
 
       <GlassCard className="mt-10 rounded-lg p-5 sm:p-8">
@@ -98,14 +122,14 @@ export function EligibilityChecker() {
           ) : result?.eligible ? (
             <>
               <CheckCircle2 aria-hidden="true" className="mx-auto text-lemon" size={42} />
-              <h2 className="mt-4 font-pixel text-2xl text-white">Wallet eligible</h2>
-              <p className="mt-2 text-sm text-white/58">Your address is included in the current testnet whitelist.</p>
+              <h2 className="mt-4 font-pixel text-2xl text-white">Mainnet whitelist eligible</h2>
+              <p className="mt-2 text-sm text-white/58">This wallet is included in the existing whitelist and collaboration list.</p>
             </>
           ) : result ? (
             <>
               <XCircle aria-hidden="true" className="mx-auto text-white/45" size={42} />
-              <h2 className="mt-4 font-pixel text-2xl text-white">Not eligible</h2>
-              <p className="mt-2 text-sm text-white/58">This wallet is not included in the current testnet whitelist.</p>
+              <h2 className="mt-4 font-pixel text-2xl text-white">Not currently whitelisted</h2>
+              <p className="mt-2 text-sm text-white/58">You can still earn mainnet priority by holding a Testnet OG or Legendary at the snapshot.</p>
             </>
           ) : (
             <>
@@ -115,6 +139,14 @@ export function EligibilityChecker() {
             </>
           )}
         </div>
+
+        {connection.isConnected ? (
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4"><p className="text-xs uppercase text-white/45">Testnet Participation</p><p className="mt-2 font-pixel text-white">{participation.legendary > 0n ? "Legendary Fused" : participation.og > 0n ? "OG Fused" : participation.minted > 0n ? "Genesis Minted" : "Not Started"}</p></div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4"><p className="text-xs uppercase text-white/45">Evolution Holdings</p><p className="mt-2 font-pixel text-white">{participation.og.toString()} OG · {participation.legendary.toString()} Legendary</p></div>
+            <div className="rounded-lg border border-lemon/25 bg-lemon/[0.06] p-4"><p className="text-xs uppercase text-lemon">Mainnet Priority</p><p className="mt-2 font-pixel text-white">{result?.eligible || participation.og > 0n || participation.legendary > 0n ? "Unlocked" : "Not Yet Unlocked"}</p></div>
+          </div>
+        ) : null}
 
         <Button
           className="mt-6 w-full"

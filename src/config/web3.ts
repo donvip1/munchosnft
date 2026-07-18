@@ -28,15 +28,28 @@ export const genesisContractAddress = (
   "0xf049D304746b5d05AC321B8c997BBe53CcDbf103"
 ) as Address;
 
-export const fusionContractAddress = (
-  process.env.NEXT_PUBLIC_FUSION_CONTRACT_ADDRESS ??
-  "0x18c480C9De6BA3088bAaAC19c1d73241dBaeA939"
+export const catalystFusionContractAddress = (
+  process.env.NEXT_PUBLIC_CATALYST_FUSION_CONTRACT_ADDRESS ??
+  "0xed236b977e46Dc6360bfe72d231912eb63bAA27c"
 ) as Address;
 
-export const fusedMetadataUrl =
-  process.env.NEXT_PUBLIC_FUSED_METADATA_URL ?? "/api/testnet-fusion-metadata/1.json";
+export const catalystMetadataBaseUrl = "/api/testnet-catalyst-metadata";
 
 export const genesisAbi = [
+  {
+    type: "function",
+    name: "tokensOfOwner",
+    stateMutability: "view",
+    inputs: [{ type: "address" }],
+    outputs: [{ type: "uint256[]" }]
+  },
+  {
+    type: "function",
+    name: "numberMinted",
+    stateMutability: "view",
+    inputs: [{ type: "address" }],
+    outputs: [{ type: "uint256" }]
+  },
   {
     type: "function",
     name: "ownerOf",
@@ -165,13 +178,45 @@ export const genesisAbi = [
   }
 ] as const;
 
-export const fusionAbi = [
+export const catalystFusionAbi = [
+  {
+    type: "function",
+    name: "totalMinted",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint256" }]
+  },
   {
     type: "function",
     name: "fuse",
     stateMutability: "nonpayable",
-    inputs: [{ name: "tokenIdA", type: "uint256" }, { name: "tokenIdB", type: "uint256" }],
-    outputs: [{ name: "fusedTokenId", type: "uint256" }]
+    inputs: [{ name: "genesisTokenId", type: "uint256" }, { name: "catalysts", type: "uint8" }],
+    outputs: [{ name: "resultTokenId", type: "uint256" }]
+  },
+  {
+    type: "function",
+    name: "ogBalanceOf",
+    stateMutability: "view",
+    inputs: [{ type: "address" }],
+    outputs: [{ type: "uint256" }]
+  },
+  {
+    type: "function",
+    name: "legendaryBalanceOf",
+    stateMutability: "view",
+    inputs: [{ type: "address" }],
+    outputs: [{ type: "uint256" }]
+  },
+  {
+    type: "event",
+    name: "CatalystFused",
+    inputs: [
+      { indexed: true, name: "owner", type: "address" },
+      { indexed: true, name: "resultTokenId", type: "uint256" },
+      { indexed: true, name: "genesisTokenId", type: "uint256" },
+      { indexed: false, name: "catalystsUsed", type: "uint8" },
+      { indexed: false, name: "tier", type: "uint8" }
+    ]
   }
 ] as const;
 

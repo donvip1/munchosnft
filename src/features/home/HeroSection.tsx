@@ -48,10 +48,10 @@ export function HeroSection() {
           <p className="mx-auto mt-6 max-w-2xl font-pixel text-xl leading-relaxed text-lemon sm:text-2xl">
             Collect. Fuse. Evolve.
           </p>
-          <div className="mt-8 flex justify-center">
-            <LinkButton href="/eligibility" size="lg">
-              Check Testnet Eligibility
-            </LinkButton>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <LinkButton href="/testnet-mint" size="lg">Mint Testnet Genesis</LinkButton>
+            <LinkButton href="/fusion" size="lg" variant="secondary">Open Fusion Lab</LinkButton>
+            <LinkButton href="/eligibility" size="lg" variant="ghost">Check Mainnet Status</LinkButton>
           </div>
         </div>
       </div>

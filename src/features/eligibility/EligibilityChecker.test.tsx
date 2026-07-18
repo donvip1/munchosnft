@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useConnection, useSwitchChain } from "wagmi";
+import { useConnection, usePublicClient, useSwitchChain } from "wagmi";
 
 import { EligibilityChecker } from "@/features/eligibility/EligibilityChecker";
 
@@ -12,6 +12,7 @@ vi.mock("wagmi", async (importOriginal) => {
   return {
     ...actual,
     useConnection: vi.fn(),
+    usePublicClient: vi.fn(),
     useSwitchChain: vi.fn()
   };
 });
@@ -21,10 +22,12 @@ vi.mock("@/components/web3/WalletConnectionProvider", () => ({
 }));
 
 const mockedConnection = vi.mocked(useConnection);
+const mockedPublicClient = vi.mocked(usePublicClient);
 const mockedSwitchChain = vi.mocked(useSwitchChain);
 
 describe("EligibilityChecker", () => {
   beforeEach(() => {
+    mockedPublicClient.mockReturnValue(undefined);
     mockedSwitchChain.mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false
@@ -44,8 +47,8 @@ describe("EligibilityChecker", () => {
   });
 
   it.each([
-    [true, "Wallet eligible"],
-    [false, "Not eligible"]
+    [true, "Mainnet whitelist eligible"],
+    [false, "Not currently whitelisted"]
   ])("renders the API eligibility result", async (eligible, expected) => {
     mockedConnection.mockReturnValue({
       isConnected: true,

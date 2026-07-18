@@ -47,16 +47,15 @@ used for the future mainnet collection.
 The public site currently exposes eligibility checks only. The on-chain sale
 phase remains closed until the community testnet mint announcement.
 
-The testnet Fusion Lab is deployed at `/fusion` against
-`0x18c480C9De6BA3088bAaAC19c1d73241dBaeA939`. It atomically consumes two
-approved Genesis NFTs and mints one Munchos Fused Testnet result. The GTD and
-Whitelist phases use the same allowlist, giving each eligible wallet one mint
-in each announced round. The home page intentionally does not link to mint or
-fusion before the community announcement.
+The public Catalyst Fusion Lab is deployed at `/fusion` against
+`0xed236b977e46Dc6360bfe72d231912eb63bAA27c`. It atomically consumes one
+approved Genesis NFT and mints either Munchos OG with one virtual catalyst or
+Munchos Legendary with both catalysts. Genesis metadata cycles Arts 1-3;
+Arts 4 and 5 are reserved for the OG and Legendary result tiers.
 
-The private, unlinked mint console is available at `/testnet-mint` for team
-testing. Eligibility checks never redirect users to it, and transactions remain
-blocked while the on-chain sale phase is Closed.
+The public testnet mint console is available at `/testnet-mint`. The campaign
+uses the Genesis Public phase so all wallets share the same on-chain one-mint
+allowance for that phase.
 
 ## Dependency Advisory
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 const MAX_SUPPLY = 4444;
-const SOURCE_ART_SUPPLY = 5;
+const SOURCE_ART_SUPPLY = 3;
 const IMAGE_BASE_URI = "ipfs://bafybeif42pyaluqr2l4k233dxwx2gr6smwe6qllqn5hbi4zurwqpftejxi/";
 
 type RouteContext = {
@@ -21,14 +21,14 @@ export async function GET(_request: Request, context: RouteContext) {
 
   return NextResponse.json(
     {
-      name: `Muncho #${tokenId}`,
+      name: `Munchos Genesis #${tokenId}`,
       description:
         "Munchos Genesis testnet concept artwork. Final mainnet artwork and traits are deployed separately.",
       image: `${IMAGE_BASE_URI}${sourceArtId}.png`,
       external_url: "https://www.munchosapp.xyz",
       attributes: [
         { trait_type: "Network", value: "Robinhood Chain Testnet" },
-        { trait_type: "Testnet Concept", value: sourceArtId },
+        { trait_type: "Genesis Art", value: sourceArtId },
         { trait_type: "Testnet Token ID", value: tokenId }
       ]
     },

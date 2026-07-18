@@ -48,19 +48,21 @@ export const whitelistTaskActions = [
 export const futureFeatures = [
   {
     title: "Testnet Eligibility",
-    description: "Check Genesis whitelist access on Robinhood Chain Testnet.",
+    description: "Check mainnet whitelist status and track your open testnet participation.",
     icon: "ShieldCheck",
     href: "/eligibility"
   },
   {
     title: "NFT Mint",
-    description: "Genesis minting opens after the public testnet announcement.",
-    icon: "Sparkles"
+    description: "Mint one of three Genesis artworks in the public Robinhood Chain testnet.",
+    icon: "Sparkles",
+    href: "/testnet-mint"
   },
   {
     title: "NFT Fusion",
-    description: "Fuse assets, lock or burn originals, and mint upgraded Munchos.",
-    icon: "RefreshCw"
+    description: "Fuse Genesis with one catalyst for OG or both catalysts for Legendary.",
+    icon: "RefreshCw",
+    href: "/fusion"
   },
   {
     title: "NFT Evolution",
@@ -114,10 +116,10 @@ export const roadmap = [
     title: "Community Launch"
   },
   {
-    title: "Testnet Eligibility"
+    title: "Public Testnet Mint"
   },
   {
-    title: "Mint Announcement"
+    title: "Catalyst Fusion Lab"
   },
   {
     title: "Evolution Engine"

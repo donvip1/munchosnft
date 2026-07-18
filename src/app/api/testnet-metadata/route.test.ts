@@ -11,12 +11,13 @@ async function metadata(token: string) {
 describe("testnet metadata API", () => {
   it("covers the first, cycled, and final token ids", async () => {
     const one = await (await metadata("1.json")).json();
-    const six = await (await metadata("6.json")).json();
+    const four = await (await metadata("4.json")).json();
     const last = await (await metadata("4444.json")).json();
 
     expect(one.image).toMatch(/\/1\.png$/);
-    expect(six.image).toMatch(/\/1\.png$/);
-    expect(last.image).toMatch(/\/4\.png$/);
+    expect(four.image).toMatch(/\/1\.png$/);
+    expect(last.image).toMatch(/\/1\.png$/);
+    expect(last.name).toBe("Munchos Genesis #4444");
     expect(last.attributes).toContainEqual({ trait_type: "Testnet Token ID", value: 4444 });
   });
 

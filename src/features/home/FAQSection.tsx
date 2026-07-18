@@ -9,12 +9,12 @@ const faqs = [
   {
     question: "What does Chain Access mean?",
     answer:
-      "Chain Access is the future wallet connection layer. It will let users connect an EVM wallet, read Robinhood Chain activity, and prepare for minting, ownership, rewards, and profile features."
+      "Wallet connection is available now on the Testnet Eligibility page. It checks an EVM wallet against the current Genesis whitelist on Robinhood Chain Testnet without starting a mint transaction."
   },
   {
     question: "What does Mint Layer mean?",
     answer:
-      "Mint Layer is the future NFT creation system for Munchos NFT. It covers allowlist access, mint sessions, smart contract minting, metadata, and the first collection experience."
+      "The testnet mint contract and metadata are prepared, but the mint page remains private until the public community announcement. Eligibility checks are available now."
   },
   {
     question: "What does Evolution Engine mean?",

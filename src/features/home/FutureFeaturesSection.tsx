@@ -8,8 +8,8 @@ export function FutureFeaturesSection() {
           eyebrow="Future Modules"
           title="Built Like an App, Ready for the Chain"
         >
-          Munchos NFT is structured for wallet sessions, smart contracts, NFT state, rewards, and
-          marketplace flows without replacing the whitelist foundation.
+          Munchos NFT now has a live testnet eligibility check. Minting, fusion, evolution, rewards,
+          and marketplace flows will open in announced stages.
         </SectionHeading>
       </div>
     </section>

@@ -28,7 +28,36 @@ export const genesisContractAddress = (
   "0xf049D304746b5d05AC321B8c997BBe53CcDbf103"
 ) as Address;
 
+export const fusionContractAddress = (
+  process.env.NEXT_PUBLIC_FUSION_CONTRACT_ADDRESS ??
+  "0x18c480C9De6BA3088bAaAC19c1d73241dBaeA939"
+) as Address;
+
+export const fusedMetadataUrl =
+  process.env.NEXT_PUBLIC_FUSED_METADATA_URL ?? "/api/testnet-fusion-metadata/1.json";
+
 export const genesisAbi = [
+  {
+    type: "function",
+    name: "ownerOf",
+    stateMutability: "view",
+    inputs: [{ type: "uint256" }],
+    outputs: [{ type: "address" }]
+  },
+  {
+    type: "function",
+    name: "isApprovedForAll",
+    stateMutability: "view",
+    inputs: [{ type: "address" }, { type: "address" }],
+    outputs: [{ type: "bool" }]
+  },
+  {
+    type: "function",
+    name: "setApprovalForAll",
+    stateMutability: "nonpayable",
+    inputs: [{ type: "address" }, { type: "bool" }],
+    outputs: []
+  },
   {
     type: "function",
     name: "salePhase",
@@ -133,6 +162,16 @@ export const genesisAbi = [
     stateMutability: "payable",
     inputs: [],
     outputs: []
+  }
+] as const;
+
+export const fusionAbi = [
+  {
+    type: "function",
+    name: "fuse",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "tokenIdA", type: "uint256" }, { name: "tokenIdB", type: "uint256" }],
+    outputs: [{ name: "fusedTokenId", type: "uint256" }]
   }
 ] as const;
 

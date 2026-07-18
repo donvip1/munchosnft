@@ -47,10 +47,15 @@ export const whitelistTaskActions = [
 
 export const futureFeatures = [
   {
+    title: "Testnet Eligibility",
+    description: "Check Genesis whitelist access on Robinhood Chain Testnet.",
+    icon: "ShieldCheck",
+    href: "/eligibility"
+  },
+  {
     title: "NFT Mint",
-    description: "Genesis access, allowlist minting, and chain-native mint sessions.",
-    icon: "Sparkles",
-    href: "/#mint"
+    description: "Genesis minting opens after the public testnet announcement.",
+    icon: "Sparkles"
   },
   {
     title: "NFT Fusion",
@@ -109,10 +114,10 @@ export const roadmap = [
     title: "Community Launch"
   },
   {
-    title: "Chain Access"
+    title: "Testnet Eligibility"
   },
   {
-    title: "Mint Layer"
+    title: "Mint Announcement"
   },
   {
     title: "Evolution Engine"

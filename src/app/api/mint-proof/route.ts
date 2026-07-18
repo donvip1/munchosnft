@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { encodePacked, getAddress, isAddress, keccak256, type Hex } from "viem";
+import { getAddress, isAddress, type Hex } from "viem";
 
 import proofBundle from "@/data/whitelist-proofs.json";
+import { lookupEligibility } from "@/lib/eligibility";
 
 type ProofBundle = {
   phase: string;
@@ -20,14 +21,10 @@ export function GET(request: Request) {
   }
 
   const checksummed = getAddress(address);
-  const leaf = keccak256(encodePacked(["address"], [checksummed]));
-  const proof = bundle.proofs[leaf];
+  const result = lookupEligibility(checksummed, bundle);
 
   return NextResponse.json({
     ok: true,
-    eligible: Boolean(proof),
-    proof: proof ?? [],
-    root: bundle.root,
-    count: bundle.count
+    ...result
   });
 }

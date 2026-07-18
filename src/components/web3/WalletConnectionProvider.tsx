@@ -14,10 +14,10 @@ import {
 import { createPortal } from "react-dom";
 import { useConnect, useConnectors, type Connector } from "wagmi";
 
-type InstalledWallet = {
-  connector: Connector;
-  name: string;
-};
+import {
+  discoverInstalledWallets,
+  type InstalledWallet
+} from "@/components/web3/wallet-discovery";
 
 type WalletConnectionContextValue = {
   openWalletModal: () => void;
@@ -32,17 +32,13 @@ const installOptions = [
   { name: "Trust Wallet", url: "https://trustwallet.com/browser-extension" }
 ] as const;
 
-function connectorName(connector: Connector) {
-  return connector.name === "Injected" ? "Browser Wallet" : connector.name;
-}
-
 export function WalletConnectionProvider({ children }: { children: ReactNode }) {
   const connectors = useConnectors();
   const { mutateAsync: connect, isPending, error, reset } = useConnect();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [detecting, setDetecting] = useState(false);
-  const [installedWallets, setInstalledWallets] = useState<InstalledWallet[]>([]);
+  const [installedWallets, setInstalledWallets] = useState<InstalledWallet<Connector>[]>([]);
 
   useEffect(() => setMounted(true), []);
 
@@ -54,19 +50,7 @@ export function WalletConnectionProvider({ children }: { children: ReactNode }) 
     reset();
 
     const discover = async () => {
-      const providerSpecificFirst = [...connectors].sort(
-        (a, b) => Number(Boolean(b.rdns)) - Number(Boolean(a.rdns))
-      );
-      const seenProviders = new Set<unknown>();
-      const detected: InstalledWallet[] = [];
-
-      for (const connector of providerSpecificFirst) {
-        const provider = await connector.getProvider().catch(() => undefined);
-        if (!provider || seenProviders.has(provider)) continue;
-
-        seenProviders.add(provider);
-        detected.push({ connector, name: connectorName(connector) });
-      }
+      const detected = await discoverInstalledWallets(connectors);
 
       if (active) {
         setInstalledWallets(detected);

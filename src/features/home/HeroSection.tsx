@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Sparkles } from "lucide-react";
 
 import { StatusPill } from "@/components/ui/StatusPill";
+import { LinkButton } from "@/components/ui/Button";
 import { siteConfig } from "@/config/site";
 
 export function HeroSection() {
@@ -47,6 +48,11 @@ export function HeroSection() {
           <p className="mx-auto mt-6 max-w-2xl font-pixel text-xl leading-relaxed text-lemon sm:text-2xl">
             Collect. Fuse. Evolve.
           </p>
+          <div className="mt-8 flex justify-center">
+            <LinkButton href="/eligibility" size="lg">
+              Check Testnet Eligibility
+            </LinkButton>
+          </div>
         </div>
       </div>
     </section>

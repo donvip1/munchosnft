@@ -16,7 +16,7 @@ export function RoadmapSection() {
               key={item.title}
             >
               <h3 className="font-pixel text-xl text-white">{item.title}</h3>
-              {index === 0 ? (
+              {index < 2 ? (
                 <CheckCircle2 aria-hidden="true" className="shrink-0 text-lemon" size={20} />
               ) : (
                 <CircleDashed aria-hidden="true" className="shrink-0 text-white/32" size={20} />

@@ -22,6 +22,7 @@ import {
   genesisContractAddress,
   robinhoodTestnet
 } from "@/config/web3";
+import { getMintState } from "@/features/mint/mint-state";
 
 const phaseNames = ["Closed", "GTD", "Whitelist", "Public"] as const;
 
@@ -62,6 +63,7 @@ export function MintSection() {
       { ...baseContract, functionName: "MAX_SUPPLY" },
       { ...baseContract, functionName: "TEAM_RESERVE" },
       { ...baseContract, functionName: "paused" },
+      { ...baseContract, functionName: "gtdMerkleRoot" },
       { ...baseContract, functionName: "whitelistMerkleRoot" },
       { ...baseContract, functionName: "GTD_PRICE" },
       { ...baseContract, functionName: "WHITELIST_PRICE" },
@@ -77,8 +79,9 @@ export function MintSection() {
   const maxSupply = state.data?.[3] ?? 4444n;
   const teamReserve = state.data?.[4] ?? 100n;
   const paused = state.data?.[5] ?? false;
-  const onchainWhitelistRoot = state.data?.[6];
-  const prices = [0n, state.data?.[7] ?? 0n, state.data?.[8] ?? 0n, state.data?.[9] ?? 0n];
+  const onchainGtdRoot = state.data?.[6];
+  const onchainWhitelistRoot = state.data?.[7];
+  const prices = [0n, state.data?.[8] ?? 0n, state.data?.[9] ?? 0n, state.data?.[10] ?? 0n];
   const activePrice = prices[phase] ?? 0n;
   const publicSupplyLimit = maxSupply - (teamReserve - teamMinted);
   const remainingPublic = publicSupplyLimit > totalMinted ? publicSupplyLimit - totalMinted : 0n;
@@ -125,40 +128,32 @@ export function MintSection() {
     }
   }, [receipt.isSuccess, refetchContractState, refetchWalletMint]);
 
+  const activeProofRoot = phase === 1 ? onchainGtdRoot : onchainWhitelistRoot;
   const proofRootActive = useMemo(
     () =>
       Boolean(
         proofData?.root &&
-          onchainWhitelistRoot &&
-          proofData.root.toLowerCase() === onchainWhitelistRoot.toLowerCase()
+          activeProofRoot &&
+          proofData.root.toLowerCase() === activeProofRoot.toLowerCase()
       ),
-    [onchainWhitelistRoot, proofData?.root]
+    [activeProofRoot, proofData?.root]
   );
 
   const alreadyMinted = (mintedInPhase.data ?? 0n) > 0n;
   const wrongChain = connection.isConnected && connection.chainId !== robinhoodTestnet.id;
   const transactionPending = isWriting || receipt.isLoading;
 
-  let actionLabel = "Mint Closed";
-  if (!connection.isConnected) actionLabel = "Connect Wallet";
-  else if (wrongChain) actionLabel = "Switch Network";
-  else if (paused) actionLabel = "Mint Paused";
-  else if (remainingPublic === 0n) actionLabel = "Sold Out";
-  else if (alreadyMinted) actionLabel = "Already Minted";
-  else if (phase === 1) actionLabel = "GTD Proof Required";
-  else if (phase === 2 && proofLoading) actionLabel = "Checking Whitelist";
-  else if (phase === 2 && !proofData?.eligible) actionLabel = "Not Eligible";
-  else if (phase === 2 && !proofRootActive) actionLabel = "Whitelist Root Pending";
-  else if (phase === 2) actionLabel = "Mint Whitelist";
-  else if (phase === 3) actionLabel = "Mint Public";
-
-  const canMint =
-    connection.isConnected &&
-    !wrongChain &&
-    !paused &&
-    !alreadyMinted &&
-    remainingPublic > 0n &&
-    ((phase === 2 && proofData?.eligible && proofRootActive) || phase === 3);
+  const { label: actionLabel, canMint } = getMintState({
+    connected: connection.isConnected,
+    wrongChain,
+    paused,
+    remainingPublic,
+    alreadyMinted,
+    phase,
+    proofLoading,
+    eligible: Boolean(proofData?.eligible),
+    proofRootActive
+  });
 
   async function handleAction() {
     setLocalError(undefined);
@@ -178,8 +173,8 @@ export function MintSection() {
       const transactionHash = await writeContract({
         ...baseContract,
         chainId: robinhoodTestnet.id,
-        functionName: phase === 2 ? "mintWhitelist" : "mintPublic",
-        args: phase === 2 ? [proofData?.proof ?? []] : [],
+        functionName: phase === 1 ? "mintGTD" : phase === 2 ? "mintWhitelist" : "mintPublic",
+        args: phase === 1 || phase === 2 ? [proofData?.proof ?? []] : [],
         value: activePrice
       });
       setHash(transactionHash);

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const steps = [
   { title: "Connect Wallet", text: "Connect an EVM browser wallet and switch to Robinhood Chain Testnet.", icon: Wallet },
   { title: "Get Testnet ETH", text: "Keep enough testnet ETH for the mint price and network gas.", icon: ShieldCheck },
-  { title: "Mint Genesis", text: "After the official announcement, open the Public testnet mint and mint one Genesis NFT.", icon: Sparkles },
+  { title: "Mint Genesis", text: "Open the Public testnet mint and mint one Genesis NFT for the campaign.", icon: Sparkles },
   { title: "Choose a Recipe", text: "Use one catalyst for Munchos OG or both catalysts for Munchos Legendary.", icon: FlaskConical },
   { title: "Approve and Fuse", text: "Approve Fusion V2, confirm the permanent Genesis burn, and mint the result.", icon: ArrowRight },
   { title: "Check Progress", text: "View the transaction, result metadata, and mainnet-priority status.", icon: CheckCircle2 }
@@ -45,8 +45,8 @@ export default function TestnetGuidePage() {
           <section className="mt-12">
             <h2 className="font-pixel text-2xl text-white">Testnet Phases</h2>
             <div className="mt-5 grid gap-px overflow-hidden rounded-lg border border-white/10 bg-white/10 sm:grid-cols-2">
-              <div className="bg-ink p-5"><p className="text-xs uppercase text-lemon">Phase 1 · Coming Soon</p><h3 className="mt-2 font-pixel text-lg text-white">Public Genesis Mint</h3><p className="mt-2 text-sm text-white/55">Closed until the official announcement.</p></div>
-              <div className="bg-ink p-5"><p className="text-xs uppercase text-lemon">Phase 2 · Coming Soon</p><h3 className="mt-2 font-pixel text-lg text-white">Catalyst Fusion</h3><p className="mt-2 text-sm text-white/55">Closed until the official announcement.</p></div>
+              <div className="bg-ink p-5"><p className="text-xs uppercase text-lemon">Phase 1</p><h3 className="mt-2 font-pixel text-lg text-white">Public Genesis Mint</h3><p className="mt-2 text-sm text-white/55">Open to all wallets. One Public-phase mint per wallet.</p></div>
+              <div className="bg-ink p-5"><p className="text-xs uppercase text-lemon">Phase 2</p><h3 className="mt-2 font-pixel text-lg text-white">Catalyst Fusion</h3><p className="mt-2 text-sm text-white/55">Burn one Genesis for OG or Legendary. Fusion is permanent.</p></div>
             </div>
           </section>
 
@@ -55,7 +55,7 @@ export default function TestnetGuidePage() {
             <p className="mt-3 max-w-3xl text-sm leading-6 text-white/60">Existing whitelist and collaboration wallets retain their access. Testnet OG and Legendary holders at the announced snapshot are added to the mainnet priority list. Public mainnet mint follows with the remaining supply.</p>
           </section>
 
-          <div className="mt-10"><LinkButton href="/eligibility" size="lg">Check Mainnet Eligibility</LinkButton></div>
+          <div className="mt-10 flex flex-wrap gap-3"><LinkButton href="/testnet-mint" size="lg">Mint Testnet Genesis</LinkButton><LinkButton href="/fusion" size="lg" variant="secondary">Open Fusion Lab</LinkButton><LinkButton href="/eligibility" size="lg" variant="ghost">Check Status</LinkButton></div>
         </div>
       </main>
       <SiteFooter />

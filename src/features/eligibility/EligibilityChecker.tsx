@@ -89,12 +89,9 @@ export function EligibilityChecker() {
     }
   }
 
-  const mainnetEligible = Boolean(
-    result?.eligible || participation.og > 0n || participation.legendary > 0n
-  );
   const status = checking
     ? "Checking eligibility"
-    : mainnetEligible
+    : result?.eligible
       ? "Eligible"
       : result
         ? "Not Eligible"
@@ -103,12 +100,12 @@ export function EligibilityChecker() {
   return (
     <div className="mx-auto w-full max-w-4xl">
       <SectionHeading eyebrow="Munchos Access" title="Eligibility and Testnet Progress">
-        Testnet minting and fusion are currently closed. Check whether this wallet qualifies through the existing whitelist or current OG and Legendary ownership.
+        Testnet minting is open to all wallets. Existing whitelist and collab status remains separate from earned mainnet priority.
       </SectionHeading>
 
       <GlassCard className="mt-10 rounded-lg p-5 sm:p-8">
         <div className="flex items-center justify-between gap-4">
-          <StatusPill tone={mainnetEligible ? "green" : "white"}>
+          <StatusPill tone={result?.eligible ? "green" : "white"}>
             <ShieldCheck aria-hidden="true" size={14} />
             {status}
           </StatusPill>
@@ -122,17 +119,17 @@ export function EligibilityChecker() {
         <div className="mt-8 border-y border-white/10 py-8 text-center">
           {checking ? (
             <LoaderCircle aria-label="Checking eligibility" className="mx-auto animate-spin text-lemon" size={34} />
-          ) : mainnetEligible ? (
+          ) : result?.eligible ? (
             <>
               <CheckCircle2 aria-hidden="true" className="mx-auto text-lemon" size={42} />
-              <h2 className="mt-4 font-pixel text-2xl text-white">Mainnet eligible</h2>
-              <p className="mt-2 text-sm text-white/58">This wallet qualifies through the whitelist or current OG/Legendary ownership.</p>
+              <h2 className="mt-4 font-pixel text-2xl text-white">Mainnet whitelist eligible</h2>
+              <p className="mt-2 text-sm text-white/58">This wallet is included in the existing whitelist and collaboration list.</p>
             </>
           ) : result ? (
             <>
               <XCircle aria-hidden="true" className="mx-auto text-white/45" size={42} />
               <h2 className="mt-4 font-pixel text-2xl text-white">Not currently whitelisted</h2>
-              <p className="mt-2 text-sm text-white/58">Only existing whitelist wallets and current OG or Legendary holders are eligible.</p>
+              <p className="mt-2 text-sm text-white/58">You can still earn mainnet priority by holding a Testnet OG or Legendary at the snapshot.</p>
             </>
           ) : (
             <>
@@ -147,7 +144,7 @@ export function EligibilityChecker() {
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4"><p className="text-xs uppercase text-white/45">Testnet Participation</p><p className="mt-2 font-pixel text-white">{participation.legendary > 0n ? "Legendary Fused" : participation.og > 0n ? "OG Fused" : participation.minted > 0n ? "Genesis Minted" : "Not Started"}</p></div>
             <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4"><p className="text-xs uppercase text-white/45">Evolution Holdings</p><p className="mt-2 font-pixel text-white">{participation.og.toString()} OG · {participation.legendary.toString()} Legendary</p></div>
-            <div className="rounded-lg border border-lemon/25 bg-lemon/[0.06] p-4"><p className="text-xs uppercase text-lemon">Mainnet Priority</p><p className="mt-2 font-pixel text-white">{mainnetEligible ? "Unlocked" : "Not Eligible"}</p></div>
+            <div className="rounded-lg border border-lemon/25 bg-lemon/[0.06] p-4"><p className="text-xs uppercase text-lemon">Mainnet Priority</p><p className="mt-2 font-pixel text-white">{result?.eligible || participation.og > 0n || participation.legendary > 0n ? "Unlocked" : "Not Yet Unlocked"}</p></div>
           </div>
         ) : null}
 

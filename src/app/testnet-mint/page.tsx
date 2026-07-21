@@ -2,13 +2,23 @@ import type { Metadata } from "next";
 
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { TestnetComingSoon } from "@/features/testnet/TestnetComingSoon";
+import { MintSection } from "@/features/mint/MintSection";
+import { LinkButton } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
-  title: "Testnet Mint Coming Soon",
-  description: "Munchos Genesis testnet minting opens after the official announcement."
+  title: "Testnet Genesis Mint",
+  description: "Public Robinhood Chain Testnet mint console for Munchos Genesis."
 };
 
 export default function TestnetMintPage() {
-  return <><SiteHeader /><main className="min-h-screen px-4 pb-20 pt-28 sm:px-6 lg:px-8"><TestnetComingSoon feature="Mint" /></main><SiteFooter /></>;
+  return (
+    <>
+      <SiteHeader />
+      <main className="min-h-screen pt-24">
+        <div className="mx-auto flex max-w-6xl justify-end px-4 pt-5 sm:px-6 lg:px-8"><LinkButton href="/testnet-guide" size="sm" variant="ghost">Testnet Guide</LinkButton></div>
+        <MintSection />
+      </main>
+      <SiteFooter />
+    </>
+  );
 }

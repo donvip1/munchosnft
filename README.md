@@ -1,6 +1,6 @@
 # Munchos NFT
 
-Munchos NFT is a mobile-first Web3 application for the Robinhood Chain ecosystem. Version 1 includes the whitelist/referral system and a live Genesis testnet mint console, while fusion, evolution, staking, rewards, profiles, and marketplace modules remain staged as Coming Soon.
+Munchos NFT is a mobile-first Web3 application for the Robinhood Chain ecosystem. Version 1 includes the whitelist/referral system and the completed Genesis testnet mint and Catalyst Fusion campaign. The public campaign is now time-gated, while evolution, staking, rewards, profiles, and marketplace modules remain staged as Coming Soon.
 
 ## Stack
 
@@ -28,6 +28,8 @@ GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exe
 NEXT_PUBLIC_SITE_URL=https://www.munchosapp.xyz
 NEXT_PUBLIC_PINNED_X_POST_URL=https://x.com/munchonft/status/2076633758585765988?s=20
 NEXT_PUBLIC_GENESIS_CONTRACT_ADDRESS=0xf049D304746b5d05AC321B8c997BBe53CcDbf103
+NEXT_PUBLIC_CATALYST_FUSION_CONTRACT_ADDRESS=0xed236b977e46Dc6360bfe72d231912eb63bAA27c
+NEXT_PUBLIC_TESTNET_ENDS_AT=2026-07-28T23:59:00+01:00
 ```
 
 If `GOOGLE_APPS_SCRIPT_URL` is not present in development, the API returns a demo success response so the UI can be tested. Production requires the Apps Script URL.
@@ -56,6 +58,40 @@ Arts 4 and 5 are reserved for the OG and Legendary result tiers.
 The public testnet mint console is available at `/testnet-mint`. The campaign
 uses the Genesis Public phase so all wallets share the same on-chain one-mint
 allowance for that phase.
+
+## Testnet Campaign Shutdown
+
+The Robinhood Chain Testnet campaign closes at the exact instant below:
+
+```text
+2026-07-28T23:59:00+01:00
+```
+
+The application treats `now >= cutoff` as closed. Before the cutoff, `/testnet-mint`, `/fusion`, and `/testnet-guide` show a live countdown. At and after the cutoff, those routes replace their active interfaces with a **Testnet has ended** state, and the homepage stops advertising active testnet minting and fusion.
+
+The mint, Genesis approval, and fusion transaction handlers also check the deadline immediately before starting the wallet transaction flow. This protects sessions that were opened before the cutoff. The website checks do not cancel transactions that were already signed and broadcast before the cutoff.
+
+### Protocol-level shutdown
+
+Website gating cannot prevent users from calling contracts directly through an explorer, script, wallet, or another application. To guarantee protocol-level closure, an authorized owner/operator must pause both deployed contracts on Robinhood Chain Testnet:
+
+- Genesis (`MunchosGenesis`): `0xf049D304746b5d05AC321B8c997BBe53CcDbf103`
+- Fusion (`MunchosCatalystFusion`): `0xed236b977e46Dc6360bfe72d231912eb63bAA27c`
+- Verified owner of both at shutdown review: `0xDB62fD815dFE3398FCe799C6C74d618837891EbA`
+
+Both contracts expose `pause()`, `unpause()`, `paused()`, `owner()`, `OPERATOR_ROLE()`, and `hasRole(bytes32,address)`. The owner address held `OPERATOR_ROLE` on both contracts during the shutdown review. Before sending transactions, confirm that the connected wallet is still authorized and that the addresses above match the intended deployments.
+
+Recommended shutdown procedure:
+
+1. Deploy this website revision with `NEXT_PUBLIC_TESTNET_ENDS_AT=2026-07-28T23:59:00+01:00` before the cutoff.
+2. Connect the authorized owner/operator wallet to Robinhood Chain Testnet (chain ID `46630`).
+3. Call `pause()` on the Genesis contract and wait for a successful receipt.
+4. Call `pause()` on the Fusion contract and wait for a successful receipt.
+5. Read `paused()` on both contracts and verify that each returns `true`.
+6. Verify the deployed site shows the countdown before the cutoff and the ended state at or after it.
+7. Attempt no destructive ownership or role changes as part of shutdown; pausing is sufficient and reversible through the authorized `unpause()` function if ever required.
+
+The shutdown is not complete at protocol level until both `paused()` reads return `true`.
 
 ## Dependency Advisory
 

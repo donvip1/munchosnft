@@ -1,4 +1,6 @@
 .next
+.next-build-backup-*
+.workbuddy-ai/
 node_modules
 out
 dist

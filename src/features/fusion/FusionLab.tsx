@@ -28,6 +28,8 @@ import {
   robinhoodTestnet
 } from "@/config/web3";
 import { getTransactionError, isFusionConfigured } from "@/features/fusion/fusion-state";
+import { testnetEndsAtMs } from "@/config/testnet";
+import { hasTestnetEnded } from "@/features/testnet/testnet-status";
 
 const genesisArt = [
   { id: 1, name: "Genesis 1", image: "/images/munchos/genesis-1.png" },
@@ -58,6 +60,16 @@ export function FusionLab() {
   const [hash, setHash] = useState<Address>();
   const [resultId, setResultId] = useState<bigint>();
   const [error, setError] = useState<string>();
+  const [campaignEnded, setCampaignEnded] = useState(false);
+
+  useEffect(() => {
+    const updateCampaignState = () => {
+      setCampaignEnded(hasTestnetEnded(Date.now(), testnetEndsAtMs));
+    };
+    updateCampaignState();
+    const timer = window.setInterval(updateCampaignState, 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const configured = isFusionConfigured(catalystFusionContractAddress);
   const walletConnected = Boolean(activeAddress);
@@ -109,6 +121,10 @@ export function FusionLab() {
   }, [activeAddress, publicClient]);
 
   async function prepare() {
+    if (hasTestnetEnded(Date.now(), testnetEndsAtMs)) {
+      setCampaignEnded(true);
+      return setError("The Munchos testnet campaign has ended. Fusion is closed.");
+    }
     if (!activeAddress) return openWalletModal();
     if (wrongChain) return switchChain({ chainId: robinhoodTestnet.id });
     if (!configured || !publicClient) return setError("Fusion is not configured yet.");
@@ -143,6 +159,10 @@ export function FusionLab() {
   }
 
   async function approve() {
+    if (hasTestnetEnded(Date.now(), testnetEndsAtMs)) {
+      setCampaignEnded(true);
+      return setError("The Munchos testnet campaign has ended. New approvals are closed.");
+    }
     if (!publicClient) return;
     setStep("approving");
     try {
@@ -158,6 +178,10 @@ export function FusionLab() {
   }
 
   async function fuse() {
+    if (hasTestnetEnded(Date.now(), testnetEndsAtMs)) {
+      setCampaignEnded(true);
+      return setError("The Munchos testnet campaign has ended. NFT fusion is closed.");
+    }
     if (!publicClient || !selectedToken) return;
     setStep("fusing");
     setError(undefined);
@@ -211,7 +235,7 @@ export function FusionLab() {
 
           {step === "complete" ? <div className="mt-7 border-y border-white/10 py-7 text-center"><CheckCircle2 aria-hidden="true" className="mx-auto text-lemon" size={40} /><h2 className="mt-3 font-pixel text-xl text-white">{result.name} minted</h2><div className="mt-4 flex flex-wrap justify-center gap-3"><LinkButton href={result.image} size="sm" target="_blank">View {result.name} Artwork</LinkButton>{resultUrl ? <a className="inline-flex items-center gap-2 px-3 py-2 text-xs text-white/55 hover:text-lemon" href={resultUrl} rel="noreferrer" target="_blank">Raw NFT metadata <ExternalLink aria-hidden="true" size={14} /></a> : null}</div></div> : null}
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">{step === "approving" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Confirming Approval</Button> : step === "fusing" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Fusing</Button> : step === "ready" && !approved ? <Button className="w-full" onClick={approve} size="lg"><ShieldCheck size={18} />Approve Fusion</Button> : step === "ready" ? <Button className="w-full" onClick={fuse} size="lg"><FlaskConical size={18} />Mint {result.name}</Button> : <Button className="w-full" disabled={isConnecting || isSwitching || busy || (walletConnected && !wrongChain && !selectedToken)} onClick={prepare} size="lg">{isConnecting || isSwitching ? <LoaderCircle className="animate-spin" size={18} /> : walletConnected ? <ShieldCheck size={18} /> : <Wallet size={18} />}{!walletConnected ? "Connect Wallet" : wrongChain ? "Switch to Robinhood Testnet" : selectedToken ? "Verify Selected Genesis" : evolved.og > 0n || evolved.legendary > 0n ? "Fusion Complete" : "Mint Genesis First"}</Button>}</div>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">{campaignEnded ? <Button className="w-full" disabled size="lg"><AlertTriangle size={18} />Testnet Ended</Button> : step === "approving" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Confirming Approval</Button> : step === "fusing" ? <Button className="w-full" disabled size="lg"><LoaderCircle className="animate-spin" size={18} />Fusing</Button> : step === "ready" && !approved ? <Button className="w-full" onClick={approve} size="lg"><ShieldCheck size={18} />Approve Fusion</Button> : step === "ready" ? <Button className="w-full" onClick={fuse} size="lg"><FlaskConical size={18} />Mint {result.name}</Button> : <Button className="w-full" disabled={isConnecting || isSwitching || busy || (walletConnected && !wrongChain && !selectedToken)} onClick={prepare} size="lg">{isConnecting || isSwitching ? <LoaderCircle className="animate-spin" size={18} /> : walletConnected ? <ShieldCheck size={18} /> : <Wallet size={18} />}{!walletConnected ? "Connect Wallet" : wrongChain ? "Switch to Robinhood Testnet" : selectedToken ? "Verify Selected Genesis" : evolved.og > 0n || evolved.legendary > 0n ? "Fusion Complete" : "Mint Genesis First"}</Button>}</div>
           {explorerUrl ? <a className="mt-4 inline-flex items-center gap-2 text-xs text-white/55 hover:text-lemon" href={explorerUrl} rel="noreferrer" target="_blank">View transaction <ExternalLink size={14} /></a> : null}
           {error ? <p className="mt-4 text-sm text-red-300">{error}</p> : null}
         </GlassCard>

@@ -1,4 +1,5 @@
 export type MintStateInput = {
+  ended: boolean;
   connected: boolean;
   wrongChain: boolean;
   paused: boolean;
@@ -18,7 +19,8 @@ export function getMintTransaction(phase: number, proof: readonly `0x${string}`[
 
 export function getMintState(input: MintStateInput) {
   let label = "Mint Closed";
-  if (!input.connected) label = "Connect Wallet";
+  if (input.ended) label = "Testnet Ended";
+  else if (!input.connected) label = "Connect Wallet";
   else if (input.wrongChain) label = "Switch Network";
   else if (input.paused) label = "Mint Paused";
   else if (input.remainingPublic === 0n) label = "Sold Out";
@@ -32,6 +34,7 @@ export function getMintState(input: MintStateInput) {
   else if (input.phase === 3) label = "Mint Public";
 
   const canMint =
+    !input.ended &&
     input.connected &&
     !input.wrongChain &&
     !input.paused &&

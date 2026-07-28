@@ -7,6 +7,7 @@ import { Sparkles } from "lucide-react";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { LinkButton } from "@/components/ui/Button";
 import { siteConfig } from "@/config/site";
+import { TestnetCampaignCta } from "@/features/testnet/TestnetGate";
 
 export function HeroSection() {
   return (
@@ -49,8 +50,15 @@ export function HeroSection() {
             Collect. Fuse. Evolve.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <LinkButton href="/testnet-mint" size="lg">Mint Testnet Genesis</LinkButton>
-            <LinkButton href="/fusion" size="lg" variant="secondary">Open Fusion Lab</LinkButton>
+            <TestnetCampaignCta
+              active={
+                <>
+                  <LinkButton href="/testnet-mint" size="lg">Mint Testnet Genesis</LinkButton>
+                  <LinkButton href="/fusion" size="lg" variant="secondary">Open Fusion Lab</LinkButton>
+                </>
+              }
+              ended={<LinkButton href="/testnet-guide" size="lg" variant="secondary">Testnet Has Ended</LinkButton>}
+            />
             <LinkButton href="/eligibility" size="lg" variant="ghost">Check Mainnet Status</LinkButton>
           </div>
         </div>

@@ -23,6 +23,8 @@ import {
   robinhoodTestnet
 } from "@/config/web3";
 import { getMintState } from "@/features/mint/mint-state";
+import { testnetEndsAtMs } from "@/config/testnet";
+import { hasTestnetEnded } from "@/features/testnet/testnet-status";
 
 const phaseNames = ["Closed", "GTD", "Whitelist", "Public"] as const;
 
@@ -53,6 +55,16 @@ export function MintSection() {
   const [proofLoading, setProofLoading] = useState(false);
   const [hash, setHash] = useState<Hex>();
   const [localError, setLocalError] = useState<string>();
+  const [campaignEnded, setCampaignEnded] = useState(false);
+
+  useEffect(() => {
+    const updateCampaignState = () => {
+      setCampaignEnded(hasTestnetEnded(Date.now(), testnetEndsAtMs));
+    };
+    updateCampaignState();
+    const timer = window.setInterval(updateCampaignState, 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const baseContract = { address: genesisContractAddress, abi: genesisAbi } as const;
   const state = useReadContracts({
@@ -144,6 +156,7 @@ export function MintSection() {
   const transactionPending = isWriting || receipt.isLoading;
 
   const { label: actionLabel, canMint } = getMintState({
+    ended: campaignEnded,
     connected: connection.isConnected,
     wrongChain,
     paused,
@@ -160,6 +173,11 @@ export function MintSection() {
     setHash(undefined);
 
     try {
+      if (hasTestnetEnded(Date.now(), testnetEndsAtMs)) {
+        setCampaignEnded(true);
+        setLocalError("The Munchos testnet campaign has ended. New mints are closed.");
+        return;
+      }
       if (!connection.isConnected) {
         openWalletModal();
         return;
@@ -234,6 +252,7 @@ export function MintSection() {
                 transactionPending ||
                 isConnecting ||
                 isSwitching ||
+                campaignEnded ||
                 (connection.isConnected && !wrongChain && !canMint)
               }
               size="lg"

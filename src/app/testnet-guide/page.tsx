@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LinkButton } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { TestnetGate } from "@/features/testnet/TestnetGate";
 
 export const metadata: Metadata = {
   title: "Testnet Guide",
@@ -25,7 +26,8 @@ export default function TestnetGuidePage() {
     <>
       <SiteHeader />
       <main className="min-h-screen px-4 pb-20 pt-32 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl">
+        <TestnetGate>
+          <div className="mx-auto max-w-5xl">
           <SectionHeading eyebrow="Testnet Guide" title="Mint. Fuse. Evolve.">
             The complete Munchos testnet path, from wallet connection to OG or Legendary.
           </SectionHeading>
@@ -56,7 +58,8 @@ export default function TestnetGuidePage() {
           </section>
 
           <div className="mt-10 flex flex-wrap gap-3"><LinkButton href="/testnet-mint" size="lg">Mint Testnet Genesis</LinkButton><LinkButton href="/fusion" size="lg" variant="secondary">Open Fusion Lab</LinkButton><LinkButton href="/eligibility" size="lg" variant="ghost">Check Status</LinkButton></div>
-        </div>
+          </div>
+        </TestnetGate>
       </main>
       <SiteFooter />
     </>

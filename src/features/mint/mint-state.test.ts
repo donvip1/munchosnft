@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { getMintState, getMintTransaction, type MintStateInput } from "@/features/mint/mint-state";
 
 const ready: MintStateInput = {
+  ended: false,
   connected: true,
   wrongChain: false,
   paused: false,
@@ -36,6 +37,17 @@ describe("getMintState", () => {
     expect(getMintState({ ...ready, paused: true }).label).toBe("Mint Paused");
     expect(getMintState({ ...ready, phase: 0 })).toEqual({ label: "Mint Closed", canMint: false });
     expect(getMintState({ ...ready, phase: 1, eligible: false }).label).toBe("Not Eligible");
+  });
+
+  it("blocks all mint states after the testnet deadline", () => {
+    expect(getMintState({ ...ready, ended: true })).toEqual({
+      label: "Testnet Ended",
+      canMint: false
+    });
+    expect(getMintState({ ...ready, ended: true, connected: false, wrongChain: true })).toEqual({
+      label: "Testnet Ended",
+      canMint: false
+    });
   });
 
   it("requires connection and the correct network", () => {

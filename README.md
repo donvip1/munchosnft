@@ -29,7 +29,7 @@ NEXT_PUBLIC_SITE_URL=https://www.munchosapp.xyz
 NEXT_PUBLIC_PINNED_X_POST_URL=https://x.com/munchonft/status/2076633758585765988?s=20
 NEXT_PUBLIC_GENESIS_CONTRACT_ADDRESS=0xf049D304746b5d05AC321B8c997BBe53CcDbf103
 NEXT_PUBLIC_CATALYST_FUSION_CONTRACT_ADDRESS=0xed236b977e46Dc6360bfe72d231912eb63bAA27c
-NEXT_PUBLIC_TESTNET_ENDS_AT=2026-07-28T23:59:00+01:00
+NEXT_PUBLIC_TESTNET_ENDS_AT=2026-07-29T08:00:00+01:00
 ```
 
 If `GOOGLE_APPS_SCRIPT_URL` is not present in development, the API returns a demo success response so the UI can be tested. Production requires the Apps Script URL.
@@ -64,7 +64,7 @@ allowance for that phase.
 The Robinhood Chain Testnet campaign closes at the exact instant below:
 
 ```text
-2026-07-28T23:59:00+01:00
+2026-07-29T08:00:00+01:00
 ```
 
 The application treats `now >= cutoff` as closed. Before the cutoff, `/testnet-mint`, `/fusion`, and `/testnet-guide` show a live countdown. At and after the cutoff, those routes replace their active interfaces with a **Testnet has ended** state, and the homepage stops advertising active testnet minting and fusion.
@@ -83,7 +83,7 @@ Both contracts expose `pause()`, `unpause()`, `paused()`, `owner()`, `OPERATOR_R
 
 Recommended shutdown procedure:
 
-1. Deploy this website revision with `NEXT_PUBLIC_TESTNET_ENDS_AT=2026-07-28T23:59:00+01:00` before the cutoff.
+1. Deploy this website revision with `NEXT_PUBLIC_TESTNET_ENDS_AT=2026-07-29T08:00:00+01:00` before the cutoff.
 2. Connect the authorized owner/operator wallet to Robinhood Chain Testnet (chain ID `46630`).
 3. Call `pause()` on the Genesis contract and wait for a successful receipt.
 4. Call `pause()` on the Fusion contract and wait for a successful receipt.

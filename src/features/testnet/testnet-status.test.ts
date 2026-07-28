@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getTestnetCountdown, hasTestnetEnded } from "@/features/testnet/testnet-status";
 
-const cutoff = Date.parse("2026-07-28T23:59:00+01:00");
+const cutoff = Date.parse("2026-07-29T08:00:00+01:00");
 
 describe("testnet status", () => {
   it("remains open immediately before the cutoff", () => {
